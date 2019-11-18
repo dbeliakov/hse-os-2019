@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en"><head><title>Архитектура компьютера и операционные системы</title><meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../../../common/shower/themes/ribbon/styles/screen-16x10.css"><style type="text/css">.caption {
+    color: #FFF;
+}</style></head><body class="shower list"><header class="caption"><h1>Архитектура компьютера и операционные системы</h1><p>Семинар 3. Целые типы данных</p></header><section id="cover" class="slide"><h2>Семинар 3. Целые типы данных</h2><p>Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020</p><img src="../../../common/cover.jpg" alt="" class="cover"><style type="text/css">#cover h2 {
+    margin: 30px 0 0;
+    color: #FFF;
+    text-align: center;
+    font-size: 70px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p {
+    margin: 10px 0 0;
+    text-align: center;
+    color: #FFF;
+    font-style: italic;
+    font-size: 20px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p a {
+    color: #FFF;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}</style></section><section class="slide"><h2>Представление беззнаковых чисел</h2><ul><li>Двоичная система счисления</li><li>Октет - 8 бит, Байт - минимальная адресуемая единица памяти (почти всегда 8 бит)</li><li>Беззнаковые целые - [0, 2^N - 1], N - число бит</li><li><code>0b00001000 = 2^3 = 8</code></li><li><code>0b00001010 = 2^3 + 2 ^ 1 = 10</code></li></ul></section><section class="slide"><h2>Представление знаковых чисел</h2><ul><li>Прямой код - старший разряд знаковый (0 - положительное число, 1 - отрицательное), диапазон [−2^(n−1)+1;2^(n−1)−1]</li><li>Обратный код - старший разряд знаковый, если число отрицательное - инвертируются биты, диапазон [−2^(n−1)+1;2^(n−1)−1]</li><li>Дополнительный код - <code>-x = ~x + 1</code>, используется чаще всего, диапазон [−2^(n−1);2^(n−1)−1]</li></ul></section><section class="slide"><h2>Целочисленные типы данных</h2><img src="img/types.png" style="width: 80%;"></section><section class="slide"><h2>Целочисленные типы данных</h2><ul><li>sizeof(char) &lt;= sizeof(short) &lt;= sizeof(int) &lt;= sizeof(long) &lt;= sizeof(long long)</li><li>sizeof(signed T) == sizeof(unsigned T)</li><li>Преобразование знаковое - беззнаковое созраняет битовое представление</li><li>Преобразование более "широкого" типа в более "узкий" отбрасывает старшие биты</li><li>Преобразование узкого типа в широкий - добивание <code>0</code> или <code>1</code></li></ul></section><section class="slide"><h2>Максимальные и минимальные значения типов</h2><ul><li>Определены в файле <code>limits.h</code></li><li>CHAR_MIN, CHAR_MAX, SCHAR_MIN, SCHAR_MAX, UCHAR_MAX, ...</li></ul></section><section class="slide"><h2>Типы фиксированной битности</h2><ul><li>Определены в файле <code>stdint.h</code></li><li><code>uint8_t</code>, <code>uint16_t</code>, <code>uint32_t</code>, <code>uint64_t</code>, <code>int8_t</code>,
+<code>int8_t</code>, <code>int16_t</code>, <code>int32_t</code>, <code>int64_t</code>, <code>intptr_t</code>, <code>uintptr_t</code></li><li>Некоторые типы могут отсутствовать на определенных платформах</li><li>В файле <code>inttypes.h</code> определены строки форматирования для фиксированных типов</li><li><a href="https://en.cppreference.com/w/cpp/types/integer">Полный список</a></li></ul></section><section class="slide"><h2>Переполнение беззнаковых чисел</h2><ul><li>Поведение определено стандартом - все операции по модулю 2^N</li><li><code>UINT_MAX + 1 = 0</code></li><li><code>0 - 1U = UINT_MAX</code></li></ul></section><section class="slide"><h2>Переполнение знаковых чисел</h2><ul><li>Переполнение при <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code>, - undefined behaviour</li><li>Сдвиг на число бит, большее размера типа - UB</li><li>Сдвиг отрицательного числа влево - UB</li><li>Сдвиг на отрицательную величину - UB</li></ul></section><section class="slide"><h2>Переполнение знаковых чисел</h2><ul><li><code>-ftrapv</code> - <code>abort()</code> при знаковом переполнении</li><li><code>-fwrapv</code> - выполнять знаковые операции по модулю 2^N (но без оптимизационных предположений)</li><li><code>-fsanitize=undefined</code> - проверка на UB при работе программы</li></ul></section><section class="slide"><h2>Контроль переполнения</h2><ul><li>Средствами языка можно реалировать проверку на переполнение (например, использовать более широкий тип), но в общем случае это замедляет выполнение программы</li><li>Некоторые компиляторы предлагают встроенные функции (intrinsic)</li><li><a href="https://gcc.gnu.org/onlinedocs/gcc/Integer-Overflow-Builtins.html">Список для GCC</a></li></ul></section><div class="progress"></div><script src="../../../common/shower/shower.min.js"></script></body></html>
