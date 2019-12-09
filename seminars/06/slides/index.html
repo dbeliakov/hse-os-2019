@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="en"><head><title>Архитектура компьютера и операционные системы</title><meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../../../common/shower/themes/ribbon/styles/screen-16x10.css"><style type="text/css">.caption {
+    color: #FFF;
+}</style></head><body class="shower list"><header class="caption"><h1>Архитектура компьютера и операционные системы</h1><p>Семинар 6. Структуры. Кодировка UTF-8</p></header><section id="cover" class="slide"><h2>Семинар 6. Структуры. Кодировка UTF-8</h2><p>Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020</p><img src="../../../common/cover.jpg" alt="" class="cover"><style type="text/css">#cover h2 {
+    margin: 30px 0 0;
+    color: #FFF;
+    text-align: center;
+    font-size: 70px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p {
+    margin: 10px 0 0;
+    text-align: center;
+    color: #FFF;
+    font-style: italic;
+    font-size: 20px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p a {
+    color: #FFF;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}</style></section><section class="slide"><h2>Структуры</h2><ul><li>Структуры позволяют объединить несколько переменных различных типов, связанных логически</li><li>Например, структура <code>Book</code> может содержать поля <code>Title</code>, <code>Author</code>, <code>ID</code>, ...</li><li>Для объявления структур используется ключевое слово <code>struct</code></li></ul></section><section class="slide"><h2>Структуры</h2><pre><code>struct [structure tag] {
+    member definition;
+    member definition;
+    ...
+    member definition;
+} [one or more structure variables];</code></pre></section><section class="slide"><h2>Структуры</h2><ul><li>Создание переменной - такое же, как для любых других типов</li><li>Доступ к полям структуры - через <code>. </code></li><li>Доступ к полям структуры по указателю - через <code>-></code></li></ul></section><section class="slide"><h2>Выравнивание данных</h2><ul><li>Машинное слово — величина, измеряемая в битах или байтах, равная разрядности регистров процессора и/или разрядности шины данных (обычно некоторая степень двойки)</li><li>В современных машинах минимальным адресуемым блоком информации называется байт, а слово состоит из нескольких байтов</li><li>Некоторые модели процессоров не могут обращаться (или делают это долго) к данным, нарушающим границы машинных слов</li></ul></section><section class="slide"><h2>Выравнивание данных</h2><ul><li>Выравниваются в памяти поля по границе кратной своему же размеру</li><li>1-байтовые поля не выравниваются, 2-байтовые — выравниваются на чётные позиции, 4-байтовые — на позиции кратные четырём и т.д</li></ul></section><section class="slide"><h2>Битовые поля</h2><ul><li>Позволяет указать размер полей в битах</li><li>Например, упаковать несколько значений в одно машинное слово</li><li>Implementation defined - лучше избегать</li></ul></section><section class="slide"><h2>Кодировка символов</h2><ul><li>ASCII - символы с кодами 0-127 (только английский язык)</li><li>Использование верхней части байта для других языков привело к появлению большого количества кодировок</li><li>Проблемы с кодировкой затудняют обмен текстати (в том числе WWW)</li><li>Unicode - кодировка повышенной емкости</li></ul></section><section class="slide"><h2>Unicode</h2><ul><li>Определяет 1 114 112 кодовых позиций</li><li><code>U+D800</code> - <code>U+FFFF</code> - не допустимы в корректном Unicode</li><li><code>U+0</code> - <code>U+7F</code> совпадает с ASCII</li></ul></section><section class="slide"><h2>UTF-8</h2><ul><li>Одна кодовая позиция кодируется от 1 до 4х байт</li><li>Совместима с ASCII</li><li>Байт <code>\0</code> всегда обозначает <code>U+0</code> (совместим с C)</li><li>Overlong encoding запрещен</li></ul></section><section class="slide"><h2>UTF-8</h2><pre><code>0x00000000 — 0x0000007F: 0xxxxxxx
+0x00000080 — 0x000007FF: 110xxxxx 10xxxxxx
+0x00000800 — 0x0000FFFF: 1110xxxx 10xxxxxx 10xxxxxx
+0x00010000 — 0x001FFFFF: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx</code></pre></section><section class="slide"><h2>Поддержка в C/C++</h2><ul><li><code>wchar_t</code> - <code>int</code> или <code>long</code>, для хранения во внутреннем представлении (UCS4)</li><li>Wide-char: <code>L'a'</code>, <code>L"Привет"</code></li><li><code>getwc</code>, <code>fgetws</code>, <code>wscanf</code>, <code>wprintf</code>, ...</li></ul></section><div class="progress"></div><script src="../../../common/shower/shower.min.js"></script></body></html>

@@ -1,0 +1,120 @@
+doctype html
+html(lang="en")
+    head
+        title Архитектура компьютера и операционные системы
+        meta(charset="utf-8")
+        meta(http-equiv="x-ua-compatible", content="ie=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="stylesheet", href="../../../common/shower/themes/ribbon/styles/screen-16x10.css")
+        style(type="text/css").
+            .caption {
+                color: #FFF;
+            }
+    body.shower.list
+        header.caption
+            h1 Архитектура компьютера и операционные системы
+            p Семинар 6. Структуры. Кодировка UTF-8
+        section.slide#cover
+            h2 Семинар 6. Структуры. Кодировка UTF-8
+            p Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020
+            img.cover(src="../../../common/cover.jpg", alt="")
+            style(type="text/css").
+                #cover h2 {
+                    margin: 30px 0 0;
+                    color: #FFF;
+                    text-align: center;
+                    font-size: 70px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p {
+                    margin: 10px 0 0;
+                    text-align: center;
+                    color: #FFF;
+                    font-style: italic;
+                    font-size: 20px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p a {
+                    color: #FFF;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+        section.slide
+            h2 Структуры
+            ul
+                li Структуры позволяют объединить несколько переменных различных типов, связанных логически
+                li Например, структура #[code Book] может содержать поля #[code Title], #[code Author], #[code ID], ...
+                li Для объявления структур используется ключевое слово #[code struct]
+        section.slide
+            h2 Структуры
+            pre
+                code.
+                    struct [structure tag] {
+                        member definition;
+                        member definition;
+                        ...
+                        member definition;
+                    } [one or more structure variables];
+        section.slide
+            h2 Структуры
+            ul
+                li Создание переменной - такое же, как для любых других типов
+                li Доступ к полям структуры - через #[code . ]
+                li Доступ к полям структуры по указателю - через #[code ->]
+        section.slide
+            h2 Выравнивание данных
+            ul
+                li Машинное слово — величина, измеряемая в битах или байтах, равная разрядности регистров процессора и/или разрядности шины данных (обычно некоторая степень двойки)
+                li В современных машинах минимальным адресуемым блоком информации называется байт, а слово состоит из нескольких байтов
+                li Некоторые модели процессоров не могут обращаться (или делают это долго) к данным, нарушающим границы машинных слов
+        section.slide
+            h2 Выравнивание данных
+            ul
+                li Выравниваются в памяти поля по границе кратной своему же размеру
+                li 1-байтовые поля не выравниваются, 2-байтовые — выравниваются на чётные позиции, 4-байтовые — на позиции кратные четырём и т.д
+        section.slide
+            h2 Битовые поля
+            ul
+                li Позволяет указать размер полей в битах
+                li Например, упаковать несколько значений в одно машинное слово
+                li Implementation defined - лучше избегать
+        section.slide
+            h2 Кодировка символов
+            ul
+                li ASCII - символы с кодами 0-127 (только английский язык)
+                li Использование верхней части байта для других языков привело к появлению большого количества кодировок
+                li Проблемы с кодировкой затудняют обмен текстати (в том числе WWW)
+                li Unicode - кодировка повышенной емкости
+        section.slide
+            h2 Unicode
+            ul
+                li Определяет 1 114 112 кодовых позиций
+                li #[code U+D800] - #[code U+FFFF] - не допустимы в корректном Unicode
+                li #[code U+0] - #[code U+7F] совпадает с ASCII
+        section.slide
+            h2 UTF-8
+            ul
+                li Одна кодовая позиция кодируется от 1 до 4х байт
+                li Совместима с ASCII
+                li Байт #[code \0] всегда обозначает #[code U+0] (совместим с C)
+                li Overlong encoding запрещен
+        section.slide
+            h2 UTF-8
+            pre
+                code.
+                    0x00000000 — 0x0000007F: 0xxxxxxx
+                    0x00000080 — 0x000007FF: 110xxxxx 10xxxxxx
+                    0x00000800 — 0x0000FFFF: 1110xxxx 10xxxxxx 10xxxxxx
+                    0x00010000 — 0x001FFFFF: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+        section.slide
+            h2 Поддержка в C/C++
+            ul
+                li #[code wchar_t] - #[code int] или #[code long], для хранения во внутреннем представлении (UCS4)
+                li Wide-char: #[code L'a'], #[code L"Привет"]
+                li #[code getwc], #[code fgetws], #[code wscanf], #[code wprintf], ...
+
+    
+        div(class="progress")
+        script(src="../../../common/shower/shower.min.js")
