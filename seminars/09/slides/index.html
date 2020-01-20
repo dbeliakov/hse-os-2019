@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="en"><head><title>Архитектура компьютера и операционные системы</title><meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../../../common/shower/themes/ribbon/styles/screen-16x10.css"><style type="text/css">.caption {
+    color: #FFF;
+}</style></head><body class="shower list"><header class="caption"><h1>Архитектура компьютера и операционные системы</h1><p>Семинар 9. Введение в ассемблер. Часть 2</p></header><section id="cover" class="slide"><h2>Семинар 9. Введение в ассемблер. Часть 2</h2><p>Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020</p><img src="../../../common/cover.jpg" alt="" class="cover"><style type="text/css">#cover h2 {
+    margin: 30px 0 0;
+    color: #FFF;
+    text-align: center;
+    font-size: 70px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p {
+    margin: 10px 0 0;
+    text-align: center;
+    color: #FFF;
+    font-style: italic;
+    font-size: 20px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p a {
+    color: #FFF;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}</style></section><section class="slide"><h2>Работа с памятью</h2><ul><li>Синтаксис: <code>смещение(база, индекс, множитель)</code></li><li>Вычисленный адрес будет равен <code>база + индекс × множитель + смещение</code></li><li>База и Индекс - регистры процессора</li><li>Множитель может принимать значения 1, 2, 4 или 8</li></ul></section><section class="slide"><h2>Работа с памятью</h2><ul><li><code>(%eax)</code> - адрес находится в регистре <code>%eax</code></li><li><code>4(%ecx)</code> - операнд находится по адресу <code>%ecx + 4</code> (удобно адресовать поля структур)</li><li><code>foo(,%ecx,4)</code> - операнд находится по адресу <code>foo + %ecx × 4</code> (удобно итерироваться по массиву)</li></ul></section><section class="slide"><h2>Подпрограммы</h2><ul><li><code>call</code> - поместить в стек адрес следующей за call команды (адрес возврата) и перейти на метку</li><li><code>ret [NUM]</code> - извлечь из стека новое значение регистра %eip [и если команде передан операнд NUM, %esp увеличивается на это число - убираются аргументы из стека]</li></ul></section><section class="slide"><h2>Передача агрументов подпрограмме</h2><ul><li>Через регистры (и, если их много, через стек)</li><li>Через стек - кладем аргументы на стек (в прямом или обратном порядке - соглашение) и вызываем подпрограмму</li></ul></section><section class="slide"><h2>Правила вызывающей стороны</h2><ul><li>Сохраняем регистры, которые не обязаны быть сохранены вызываемой стороной (если в них содержатся наши данные)</li><li>Записываем аргументы на стек в обратном порядке (например, сначала значение, потом форматную строку для <code>printf</code>)</li><li>Вызываем подпрограмму</li><li>Удаляем агрументы функции (добавляем к стеку значение в байтах)</li><li>Восстанавливаем регистры из стека</li></ul></section><section class="slide"><h2>Правила вызываемой стороны</h2><ul><li>Сохраняем значение <code>%ebp</code> на стеке</li><li>Устанавливаем значение <code>%esp</code> в <code>ebp</code> (новый кадр стека, можем легко обращаться к переданным аргументам)</li><li>Выделяем место на стеке для локальных переменных (уменьшить значение <code>%esp</code>)</li><li>Сохраняем в стек регистры, которые мы обязаны сохранить (если их не меняем - можно не сохранять)</li></ul></section><section class="slide"><h2>Правила вызываемой стороны</h2><img src="./img/stack.png"></section><section class="slide"><h2>Правила вызываемой стороны</h2><ul><li>Восстанавливаем сохраненные регистры</li><li>Освобождаем место под локальные переменные (просто установка значения <code>%ebp</code> в <code>%esp</code>)</li><li>Восстанавливаем <code>%ebp</code></li><li>Возвращаемся при помощи <code>ret</code></li></ul></section><section class="slide"><h2>Пролог и эпилог</h2><ul><li>Пролог и эпилог - описанные выше правила, которым должна следовать каждая подпрограмма</li><li>Можно использовать <code>enter NUM1, NUM2</code> (NUM1 - размер памяти под локальные переменные, NUM2 - вложенность, почти всегда 0) и <code>leave</code> - однако, эти команды сейчас практически не используются</li></ul></section><div class="progress"></div><script src="../../../common/shower/shower.min.js"></script></body></html>
