@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en"><head><title>Архитектура компьютера и операционные системы</title><meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../../../common/shower/themes/ribbon/styles/screen-16x10.css"><style type="text/css">.caption {
+    color: #FFF;
+}</style></head><body class="shower list"><header class="caption"><h1>Архитектура компьютера и операционные системы</h1><p>Семинар 10. Введение в ассемблер. Часть 3</p></header><section id="cover" class="slide"><h2>Семинар 10. Введение в ассемблер. Часть 3</h2><p>Архитектура компьютера и операционные системы @ ВШЭ, 2018-2019</p><img src="../../../common/cover.jpg" alt="" class="cover"><style type="text/css">#cover h2 {
+    margin: 30px 0 0;
+    color: #FFF;
+    text-align: center;
+    font-size: 70px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p {
+    margin: 10px 0 0;
+    text-align: center;
+    color: #FFF;
+    font-style: italic;
+    font-size: 20px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p a {
+    color: #FFF;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+</style></section><section class="slide"><h2>Вещественная арифметика</h2><ul><li>FPU – это набор команд процессора для работы с вещественной арифметикой</li><li>Основная задача - оптимизировать время выполнения операций над вещественными числами на аппаратном уровне</li><li>Регистры FPU реализованы в виде стека - <code>st=st(0), st(1), st(2), st(3), st(4), st(5), st(6), st(7)</code></li><li>Когда в сопроцессор загружается число, оно кладется в <code>st(0)</code>, а все другие регистры сдвигаются</li></ul></section><section class="slide"><h2>Вещественная арифметика</h2><ul><li><code>fld</code>, <code>fst</code>, <code>fstp</code>, суффиксы - <code>s</code> (float), <code>l</code> (double), <code>t</code> (long double)</li><li><code>fxch</code>, <code>fadd</code>, <code>fsub</code>, <code>fmul</code>, <code>fdiv</code>, <code>fabs</code>, <code>fsqrt</code></li><li><a href="http://osinavi.ru/asm/FPUexpansion/4.html">Больше команд</a></li></ul></section><section class="slide"><h2>Соглашение о вызовах</h2><ul><li>Вещественные аргументы передаются через стек</li><li>Вещественный результат возвращается в <code>%st(0)</code></li></ul></section><section class="slide"><h2>Регистры SSE</h2><ul><li><b>SSE</b> - набор инструкций, разработанный Intel. SIMD (Single Instruction, Multiple Data)</li><li>Восемь 128-битных регистров и набор инструкций, работающих со скалярными и упакованными типами данных</li><li>Преимущество в производительности достигается в том случае, когда необходимо произвести одну и ту же последовательность действий над разными данными</li></ul></section><section class="slide"><h2>Регистры SSE</h2><ul><li>Для хранения аргументов операций SSE используются регистры xmm (%xmm0 ... %xmm7), размер - 128 бит</li><li>При вызове подпрограмм сохранение этих регистров не гарантируется</li><li>Интерпретация записанных в xmm значений зависит от используемой команды</li><li>В x64 регистры xmm используются для вещественных аргументов и результата</li></ul></section><section class="slide"><h2>Команды SSE</h2><ul><li><code>movs</code>, суффиксы - <code>s</code> (float), <code>d</code> (double)</li><li><code>adds</code>, <code>subs</code>, <code>muls</code>, <code>divs</code>, <code>sqrts</code>, <code>maxs</code>, <code>mins</code></li><li><code>cvtsd2si</code>, <code>cvtsd2ss</code>, <code>cvtsi2sd</code>, <code>cvtss2sd</code>, <code>cvtss2si</code>, <code>cvtsi2ss</code> - команды приведения типа</li><li><code>comisd</code>, <code>comiss</code> - команды сравнения (устанавливают флаги)</li></ul></section><section class="slide"><h2>Векторные вычисления SSE</h2><ul><li>Значения упаковываются в регистры xmm (два double или четыре float)</li><li><code>movapd</code> - адрес должен быть выровнен по 16, <code>movupd</code> - адрес может быть не выровнен</li><li>Те же команды, только <code>p</code> вместо <code>s</code> (<code>adds</code> - <code>addp</code>)</li></ul></section><section class="slide"><h2>Горизонтальные операции</h2><ul><li>Горизонтальная операция вовлекает значения из одного регистра</li><li>Например, <code>haddps</code> сложит четыре float-значения, записанные в одном регистре</li></ul></section><div class="progress"></div><script src="../../../common/shower/shower.min.js"></script></body></html>

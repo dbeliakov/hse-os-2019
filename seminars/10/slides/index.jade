@@ -1,0 +1,103 @@
+doctype html
+html(lang="en")
+    head
+        title Архитектура компьютера и операционные системы
+        meta(charset="utf-8")
+        meta(http-equiv="x-ua-compatible", content="ie=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="stylesheet", href="../../../common/shower/themes/ribbon/styles/screen-16x10.css")
+        style(type="text/css").
+            .caption {
+                color: #FFF;
+            }
+    body.shower.list
+        header.caption
+            h1 Архитектура компьютера и операционные системы
+            p Семинар 10. Введение в ассемблер. Часть 3
+        section.slide#cover
+            h2 Семинар 10. Введение в ассемблер. Часть 3
+            p Архитектура компьютера и операционные системы @ ВШЭ, 2018-2019
+            img.cover(src="../../../common/cover.jpg", alt="")
+            style(type="text/css").
+                #cover h2 {
+                    margin: 30px 0 0;
+                    color: #FFF;
+                    text-align: center;
+                    font-size: 70px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p {
+                    margin: 10px 0 0;
+                    text-align: center;
+                    color: #FFF;
+                    font-style: italic;
+                    font-size: 20px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p a {
+                    color: #FFF;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+
+        section.slide
+            h2 Вещественная арифметика
+            ul
+                li FPU – это набор команд процессора для работы с вещественной арифметикой
+                li Основная задача - оптимизировать время выполнения операций над вещественными числами на аппаратном уровне
+                li Регистры FPU реализованы в виде стека - #[code st=st(0), st(1), st(2), st(3), st(4), st(5), st(6), st(7)]
+                li Когда в сопроцессор загружается число, оно кладется в #[code st(0)], а все другие регистры сдвигаются
+
+        section.slide
+            h2 Вещественная арифметика
+            ul
+                li #[code fld], #[code fst], #[code fstp], суффиксы - #[code s] (float), #[code l] (double), #[code t] (long double)
+                li #[code fxch], #[code fadd], #[code fsub], #[code fmul], #[code fdiv], #[code fabs], #[code fsqrt]
+                li #[a(href="http://osinavi.ru/asm/FPUexpansion/4.html") Больше команд]
+
+        section.slide
+            h2 Соглашение о вызовах
+            ul
+                li Вещественные аргументы передаются через стек
+                li Вещественный результат возвращается в #[code %st(0)]
+
+        section.slide
+            h2 Регистры SSE
+            ul
+                li #[b SSE] - набор инструкций, разработанный Intel. SIMD (Single Instruction, Multiple Data)
+                li Восемь 128-битных регистров и набор инструкций, работающих со скалярными и упакованными типами данных
+                li Преимущество в производительности достигается в том случае, когда необходимо произвести одну и ту же последовательность действий над разными данными
+        
+        section.slide
+            h2 Регистры SSE
+            ul
+                li Для хранения аргументов операций SSE используются регистры xmm (%xmm0 ... %xmm7), размер - 128 бит
+                li При вызове подпрограмм сохранение этих регистров не гарантируется
+                li Интерпретация записанных в xmm значений зависит от используемой команды
+                li В x64 регистры xmm используются для вещественных аргументов и результата
+
+        section.slide
+            h2 Команды SSE
+            ul
+                li #[code movs], суффиксы - #[code s] (float), #[code d] (double)
+                li #[code adds], #[code subs], #[code muls], #[code divs], #[code sqrts], #[code maxs], #[code mins]
+                li #[code cvtsd2si], #[code cvtsd2ss], #[code cvtsi2sd], #[code cvtss2sd], #[code cvtss2si], #[code cvtsi2ss] - команды приведения типа
+                li #[code comisd], #[code comiss] - команды сравнения (устанавливают флаги)
+
+        section.slide
+            h2 Векторные вычисления SSE
+            ul
+                li Значения упаковываются в регистры xmm (два double или четыре float)
+                li #[code movapd] - адрес должен быть выровнен по 16, #[code movupd] - адрес может быть не выровнен
+                li Те же команды, только #[code p] вместо #[code s] (#[code adds] - #[code addp])
+
+        section.slide
+            h2 Горизонтальные операции
+            ul
+                li Горизонтальная операция вовлекает значения из одного регистра
+                li Например, #[code haddps] сложит четыре float-значения, записанные в одном регистре
+
+        div(class="progress")
+        script(src="../../../common/shower/shower.min.js")
