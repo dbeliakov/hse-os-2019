@@ -1,0 +1,115 @@
+doctype html
+html(lang="en")
+    head
+        title Архитектура компьютера и операционные системы
+        meta(charset="utf-8")
+        meta(http-equiv="x-ua-compatible", content="ie=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="stylesheet", href="../../../common/shower/themes/ribbon/styles/screen-16x10.css")
+        style(type="text/css").
+            .caption {
+                color: #FFF;
+            }
+    body.shower.list
+        header.caption
+            h1 Архитектура компьютера и операционные системы
+            p Семинар 12. Файлы
+        section.slide#cover
+            h2 Семинар 12. Файлы
+            p Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020
+            img.cover(src="../../../common/cover.jpg", alt="")
+            style(type="text/css").
+                #cover h2 {
+                    margin: 30px 0 0;
+                    color: #FFF;
+                    text-align: center;
+                    font-size: 70px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p {
+                    margin: 10px 0 0;
+                    text-align: center;
+                    color: #FFF;
+                    font-style: italic;
+                    font-size: 20px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p a {
+                    color: #FFF;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+
+        section.slide
+            h2 Файловые дескрипторы
+            ul
+                li Неотрицательное челове число
+                li Когда создается новый поток ввода-вывода, ядро возвращает процессу, создавшему поток ввода-вывода, его файловый дескриптор
+                li По умолчанию 0 - #[code stdin], 1 - #[code stdout], 2 - #[code stderr]. Это (необязательное) соглашение оболочек, но не составная часть ядра
+                li Стандарт POSIX - #[code STDIN_FILENO], #[code STDOUT_FILENO] и #[code STDERR_FILENO]
+
+        section.slide
+            h2 Файловые дескрипторы
+            ul
+                li Под файловые дескрипторы отводится диапазон чисел от 0 до #[code OPEN_MAX]
+                li Посмотреть значение #[code OPEN_MAX] можно с помощью #[code sysconf(_SC_OPEN_MAX);]
+                li #[code OPEN_MAX] не может быть меньше, чем #[code _POSIX_OPEN_MAX]
+                li Увеличить можно с помощью команды #[code ulimit –n]
+
+        section.slide
+            h2 Open
+            ul
+                li Заголовочный файл #[code fcntl.h]
+                li #[code(style="font-size: 15pt;") int open(const char *pathname, int oflag, ... /* mode_t mode*/);]
+                li Возвращает дескриптор в случае успеха, -1 в случае ошибки
+                li (обязательно) #[code O_RDONLY] или #[code O_WRONLY] или #[code O_RDWR]
+                li (необязательно )#[code O_APPEND], #[code O_CREAT], #[code O_EXCL], #[code O_TRUNC], #[code O_NOCTTY], #[code O_NONBLOCK], #[code O_DSYNC], #[code O_RSYNC], #[code O_SYNC]
+                li #[code mode] нужен только при создании файла, #[a(href="https://jameshfisher.com/2017/02/24/what-is-mode_t.html") список констант]
+        
+        section.slide
+            h2 Creat
+            ul
+                li Заголовочный файл #[code fcntl.h]
+                li #[code(style="font-size: 15pt;") int creat(const char *pathname, mode_t mode);]
+                li Возвращает дескриптор, доступный только для записи, или -1 в случае ошибки
+                li Эквивалентна #[code open(pathname, O_WRONLY | O_CREAT | O_TRUNC, mode);]
+        
+        section.slide
+            h2 Close
+            ul
+                li Заголовочный файл #[code unistd.h]
+                li #[code(style="font-size: 15pt;") int close(int filedes);]
+                li Возвращает 0 в случае успеха, -1 в случае ошибки
+                li При завершении процесса все открытые им файлы автоматически закрываются
+
+        section.slide
+            h2 Lseek
+            ul
+                li Заголовочный файл #[coed unistd.h]
+                li #[code(style="font-size: 15pt;") off_t lseek(int filedes, off_t offset, int whence);]
+                li Возвращает новую текущую позицию файла в случае успеха, –1 в случае ошибки
+                li #[code SEEK_SET] - смещение от начала файла, #[code SEEK_CUR] - смещение от текущей позиции, #[code SEEK_END] - смещение от конца файла
+                li Передав 0, можно узнать текущее смещение и есть ли возможность свободного перемещения
+
+        section.slide
+            h2 Read
+            ul
+                li Заголовочный файл #[code unistd.h]
+                li #[code(style="font-size: 15pt;") ssize_t read(int filedes, void *buf, size_t nbytes);]
+                li Возвращает количество прочитанных байт, 0 в случае конца файла, -1 в случае ошибки
+                li В случае успеха текущая позиция будет увеличина
+                li Важно помнить, что по ряду причин считанно может быть меньше байт, чем запрошено
+
+        section.slide
+            h2 Write
+            ul
+                li Заголовочный файл #[code unistd.h]
+                li #[code(style="font-size: 15pt;") ssize_t write(int filedes, const void *buf, size_t nbytes);]
+                li Возвращает количество записанных байт, -1 в случае ошибки
+                li Важно помнить, что по ряду причин записано может быть меньше байт, чем передано
+
+
+        div(class="progress")
+        script(src="../../../common/shower/shower.min.js")

@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en"><head><title>Архитектура компьютера и операционные системы</title><meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../../../common/shower/themes/ribbon/styles/screen-16x10.css"><style type="text/css">.caption {
+    color: #FFF;
+}</style></head><body class="shower list"><header class="caption"><h1>Архитектура компьютера и операционные системы</h1><p>Семинар 12. Файлы</p></header><section id="cover" class="slide"><h2>Семинар 12. Файлы</h2><p>Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020</p><img src="../../../common/cover.jpg" alt="" class="cover"><style type="text/css">#cover h2 {
+    margin: 30px 0 0;
+    color: #FFF;
+    text-align: center;
+    font-size: 70px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p {
+    margin: 10px 0 0;
+    text-align: center;
+    color: #FFF;
+    font-style: italic;
+    font-size: 20px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p a {
+    color: #FFF;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+</style></section><section class="slide"><h2>Файловые дескрипторы</h2><ul><li>Неотрицательное челове число</li><li>Когда создается новый поток ввода-вывода, ядро возвращает процессу, создавшему поток ввода-вывода, его файловый дескриптор</li><li>По умолчанию 0 - <code>stdin</code>, 1 - <code>stdout</code>, 2 - <code>stderr</code>. Это (необязательное) соглашение оболочек, но не составная часть ядра</li><li>Стандарт POSIX - <code>STDIN_FILENO</code>, <code>STDOUT_FILENO</code> и <code>STDERR_FILENO</code></li></ul></section><section class="slide"><h2>Файловые дескрипторы</h2><ul><li>Под файловые дескрипторы отводится диапазон чисел от 0 до <code>OPEN_MAX</code></li><li>Посмотреть значение <code>OPEN_MAX</code> можно с помощью <code>sysconf(_SC_OPEN_MAX);</code></li><li><code>OPEN_MAX</code> не может быть меньше, чем <code>_POSIX_OPEN_MAX</code></li><li>Увеличить можно с помощью команды <code>ulimit –n</code></li></ul></section><section class="slide"><h2>Open</h2><ul><li>Заголовочный файл <code>fcntl.h</code></li><li><code style="font-size: 15pt;">int open(const char *pathname, int oflag, ... /* mode_t mode*/);</code></li><li>Возвращает дескриптор в случае успеха, -1 в случае ошибки</li><li>(обязательно) <code>O_RDONLY</code> или <code>O_WRONLY</code> или <code>O_RDWR</code></li><li>(необязательно )<code>O_APPEND</code>, <code>O_CREAT</code>, <code>O_EXCL</code>, <code>O_TRUNC</code>, <code>O_NOCTTY</code>, <code>O_NONBLOCK</code>, <code>O_DSYNC</code>, <code>O_RSYNC</code>, <code>O_SYNC</code></li><li><code>mode</code> нужен только при создании файла, <a href="https://jameshfisher.com/2017/02/24/what-is-mode_t.html">список констант</a></li></ul></section><section class="slide"><h2>Creat</h2><ul><li>Заголовочный файл <code>fcntl.h</code></li><li><code style="font-size: 15pt;">int creat(const char *pathname, mode_t mode);</code></li><li>Возвращает дескриптор, доступный только для записи, или -1 в случае ошибки</li><li>Эквивалентна <code>open(pathname, O_WRONLY | O_CREAT | O_TRUNC, mode);</code></li></ul></section><section class="slide"><h2>Close</h2><ul><li>Заголовочный файл <code>unistd.h</code></li><li><code style="font-size: 15pt;">int close(int filedes);</code></li><li>Возвращает 0 в случае успеха, -1 в случае ошибки</li><li>При завершении процесса все открытые им файлы автоматически закрываются</li></ul></section><section class="slide"><h2>Lseek</h2><ul><li>Заголовочный файл <coed>unistd.h</coed></li><li><code style="font-size: 15pt;">off_t lseek(int filedes, off_t offset, int whence);</code></li><li>Возвращает новую текущую позицию файла в случае успеха, –1 в случае ошибки</li><li><code>SEEK_SET</code> - смещение от начала файла, <code>SEEK_CUR</code> - смещение от текущей позиции, <code>SEEK_END</code> - смещение от конца файла</li><li>Передав 0, можно узнать текущее смещение и есть ли возможность свободного перемещения</li></ul></section><section class="slide"><h2>Read</h2><ul><li>Заголовочный файл <code>unistd.h</code></li><li><code style="font-size: 15pt;">ssize_t read(int filedes, void *buf, size_t nbytes);</code></li><li>Возвращает количество прочитанных байт, 0 в случае конца файла, -1 в случае ошибки</li><li>В случае успеха текущая позиция будет увеличина</li><li>Важно помнить, что по ряду причин считанно может быть меньше байт, чем запрошено</li></ul></section><section class="slide"><h2>Write</h2><ul><li>Заголовочный файл <code>unistd.h</code></li><li><code style="font-size: 15pt;">ssize_t write(int filedes, const void *buf, size_t nbytes);</code></li><li>Возвращает количество записанных байт, -1 в случае ошибки</li><li>Важно помнить, что по ряду причин записано может быть меньше байт, чем передано</li></ul></section><div class="progress"></div><script src="../../../common/shower/shower.min.js"></script></body></html>
