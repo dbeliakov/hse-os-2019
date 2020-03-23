@@ -1,0 +1,207 @@
+doctype html
+html(lang="en")
+    head
+        title Архитектура компьютера и операционные системы
+        meta(charset="utf-8")
+        meta(http-equiv="x-ua-compatible", content="ie=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="stylesheet", href="../../../common/shower/themes/ribbon/styles/screen-16x10.css")
+        style(type="text/css").
+            .caption {
+                color: #FFF;
+            }
+    body.shower.list
+        header.caption
+            h1 Архитектура компьютера и операционные системы
+            p Семинар 13. Время. Файловая система
+        section.slide#cover
+            h2 Семинар 13. Время. Файловая система
+            p Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020
+            img.cover(src="../../../common/cover.jpg", alt="")
+            style(type="text/css").
+                #cover h2 {
+                    margin: 30px 0 0;
+                    color: #FFF;
+                    text-align: center;
+                    font-size: 70px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p {
+                    margin: 10px 0 0;
+                    text-align: center;
+                    color: #FFF;
+                    font-style: italic;
+                    font-size: 20px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p a {
+                    color: #FFF;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+
+        section.slide
+            h2 Время в UNIX
+            ul
+                li Счетчик секунд, прошедших от начала Эпохи – 00:00:00 1 января 1970 года UTC
+                li Значение счетчика представимо типом #[code time_t]
+                li UNIX хранит время в UTC
+                li UNIX автоматически производит преобразования, такие как переход на летнее время
+                li UNIX хранит дату и время как единое целое
+
+        section.slide
+            h2 Время в UNIX
+            ul
+                li #[code(style="font-size: 15pt;") time_t time(time_t *calptr);]
+                li Заголовочный файл - #[code time.h]
+                li Возвращает значение времени в случае успеха, –1 в случае ошибки
+                li Если в качестве аргумента calptr передается непустой указатель, то значение времени дополнительно записывается по указанному адресу
+
+        section.slide
+            h2 Время в UNIX
+            ul
+                li #[code(style="font-size: 15pt;") int gettimeofday(struct timeval *restrict tp, void *restrict tzp);]
+                li Заголовочный файл #[code sys/time.h]
+                li Более высокая точность, до микросекунд
+                li Стандарт Single UNIX Specification (расширение XSI)
+                li #[code tzp] по стандарту - #[code NULL], некоторые платформы принимают time-зону
+                li Поля структуры #[code(style="font-size: 15pt;") time_t tv_sec; long tv_usec;]
+
+        section.slide
+            h2 Время в UNIX
+            pre
+                code(style="font-size: 15pt;").
+                    struct tm { /* время, разбитое на составляющие */
+                        int tm_sec; /* секунды от начала минуты: [0 -60] */
+                        int tm_min; /* минуты от начала часа: [0 - 59] */
+                        int tm_hour; /* часы от полуночи: [0 - 23] */
+                        int tm_mday; /* дни от начала месяца: [1 - 31] */
+                        int tm_mon; /* месяцы с января: [0 - 11] */
+                        int tm_year; /* годы с 1900 года */
+                        int tm_wday; /* дни с воскресенья: [0 - 6] */
+                        int tm_yday; /* дни от начала года (1 января): [0 - 365] */
+                        int tm_isdst; /* флаг перехода на летнее время: <0, 0, >0 */
+                    };
+
+        section.slide
+            h2 Время в UNIX
+            ul
+                li #[code(style="font-size: 15pt;") struct tm *gmtime(const time_t *calptr);]
+                li Разбивает на составляющие UTC
+                li #[code(style="font-size: 15pt;") struct tm *localtime(const time_t *calptr);]
+                li Возвращает местное время
+                li Заголовочный файл #[code time.h]
+
+        section.slide
+            h2 Время в UNIX
+            ul
+                li #[code(style="font-size: 15pt;") time_t mktime(struct tm *tmptr);]
+                li Заголовочный файл #[code time.h]
+                li Принимает местное время и возвращает календарное (или -1 в случае ошибки)
+                li Исходные значения членов структуры tm_wday и tm_yday из ptrtime игнорируются
+                li Изменяет аргумент в пределах нормы в соответствии с указанным временем
+
+        section.slide
+            h2 Время в UNIX
+            ul
+                li #[code(style="font-size: 15pt;") char *asctime(const struct tm *tmptr);]
+                li #[code(style="font-size: 15pt;") char *ctime(const time_t *calptr);]
+                li Возвращают строку длиной 26 байт
+                li #[code(style="font-size: 15pt;") size_t strftime(char *restrict buf, size_t maxsize, const char *restrict format, const struct tm *restrict tmptr);]
+                li Как #[code printf], только для форматирования времени
+                li #[a(href="http://www.cplusplus.com/reference/ctime/strftime/") Формат]
+                li Заголовочный файл #[code time.h]
+
+        section.slide
+            h2 Файловая система
+            ul
+                li #[code(style="font-size: 15pt;") int stat(const char *restrict pathname, struct stat *restrict buf);]
+                li #[code(style="font-size: 15pt;") int stat(const char *restrict pathname, struct stat *restrict buf);]
+                li #[code(style="font-size: 15pt;") int stat(const char *restrict pathname, struct stat *restrict buf);]
+                li Заголовочный файл #[code sys/stat.h]
+                li Возвращают структуру с информацией о файле
+        
+        section.slide
+            h2 Файловая система
+            pre
+                code(style="font-size: 11pt;").
+                    struct stat {
+                        mode_t st_mode; /* тип файла и режим (права доступа) */
+                        ino_t st_ino; /* номер индексного узла */
+                        dev_t st_dev; /* номер устройства (файловой системы) */
+                        dev_t st_rdev; /* номер устройства для специальных файлов */
+                        nlink_t st_nlink; /* количество ссылок */
+                        uid_t st_uid; /* идентификатор пользователя владельца */
+                        gid_t st_gid; /* идентификатор группы владельца */
+                        off_t st_size; /* размер в байтах, для обычных файлов */
+                        time_t st_atime; /* время последнего обращения к файлу */
+                        time_t st_mtime; /* время последнего изменения файла */
+                        time_t st_ctime; /* время последнего изменения флагов состояния файла */
+                        blksize_t st_blksize; /* оптимальный размер блока ввода вывода */
+                        blkcnt_t st_blocks; /* количество занятых дисковых блоков */
+                    };
+
+        section.slide
+            h2 Типы файлов
+            ul(style="font-size: 15pt;")
+                li Обычный файл (текстовый или бинарный) #[code S_ISREG(st_mode)]
+                li Файл каталога. Только ядро имеет право писать в файл каталога #[code S_ISDIR(st_mode)]
+                li Специальный файл блочного устройства (например, жесткий диск) #[code S_ISBLK(st_mode)]
+                li Специальный файл символьного устройства (например, клавиатура, принтер) #[code S_ISCHR(st_mode)]
+                li FIFO, или именованный канал #[code S_ISFIFO(st_mode)]
+                li Сокет #[code S_ISSOCK(st_mode)]
+                li Символическая ссылка #[code S_ISLNK(st_mode)]
+        
+        section.slide
+            h2 Access
+            ul
+                li #[code(style="font-size: 15pt;") int access(const char *pathname, int mode);]
+                li Заголовочный файл #[code unistd.h]
+                li #[code F_OK] - просто факт существования, #[code R_OK] - файл можно читать, #[code W_OK] - в файл можно писать, #[code X_OK] - файл можно исполнить
+                li 0 в случае успеха, -1 в случае отказа (и устанавливает #[code errno])
+
+        section.slide
+            h2 Работа с каталогами
+            ul
+                li #[code(style="font-size: 15pt;") int mkdir(const char *pathname, mode_t mode);]
+                li Заголовочный файл #[code sys/stat.h]
+                li #[code(style="font-size: 15pt;") int rmdir(const char *pathname);]
+                li Заголовочный файл #[code unistd.h]
+        
+        section.slide
+            h2 Работа с каталогами
+            pre
+                code(style="font-size: 11pt;").
+                    #include &lt;dirent.h&gt;
+
+                    DIR *opendir(const char *pathname); //Возвращает указатель в случае успеха или NULL в случае ошибки.
+                    struct dirent *readdir(DIR *dp); // Возвращает указатель в случае успеха, 
+                                                    // NULL в случае достижения конца каталога или ошибки.
+                    void rewinddir(DIR *dp); // Обнуляет текущую позицию в директории. Вызов всегда успешен.
+                    int closedir(DIR *dp); // Парный вызов для opendir. Возвращает 0 в случае успеха или –1 в случае ошибки.
+                    long telldir(DIR *dp); // Возвращает значение текущей позиции в каталоге, ассоциированном с dp, 
+                                        // или -1 в случае ошибки.
+                    void seekdir(DIR *dp, long loc); // Устанавливает текущую позицию в директории. Вызов всегда успешен.
+            
+        section.slide
+            h2 Работа с каталогами
+            pre
+                code(style="font-size: 15pt;").
+                    struct dirent {
+                        ino_t d_ino; /* номер индексного узла */
+                        char d_name[NAME_MAX + 1]; /* строка имени файла */
+                    }
+
+        section.slide
+            h2 Рабочий каталог
+            ul
+                li У каждого процесса есть свой рабочий каталог, от него считаются относительные пути
+                li #[code(style="font-size: 15pt;") int chdir(const char *pathname);]
+                li #[code(style="font-size: 15pt;") int fchdir(int filedes);]
+                li #[code(style="font-size: 15pt;") char *getcwd(char *buf, size_t size);]
+                li Заголовочный файл #[code unistd.h]
+
+        div(class="progress")
+        script(src="../../../common/shower/shower.min.js")

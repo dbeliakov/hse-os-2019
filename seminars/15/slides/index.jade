@@ -1,0 +1,150 @@
+doctype html
+html(lang="en")
+    head
+        title Архитектура компьютера и операционные системы
+        meta(charset="utf-8")
+        meta(http-equiv="x-ua-compatible", content="ie=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="stylesheet", href="../../../common/shower/themes/ribbon/styles/screen-16x10.css")
+        style(type="text/css").
+            .caption {
+                color: #FFF;
+            }
+    body.shower.list
+        header.caption
+            h1 Архитектура компьютера и операционные системы
+            p Семинар 15. Отображение файлов в память
+        section.slide#cover
+            h2 Семинар 15. Отображение файлов в память
+            p Архитектура компьютера и операционные системы @ ВШЭ, 2018-2019
+            img.cover(src="../../../common/cover.jpg", alt="")
+            style(type="text/css").
+                #cover h2 {
+                    margin: 30px 0 0;
+                    color: #FFF;
+                    text-align: center;
+                    font-size: 70px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p {
+                    margin: 10px 0 0;
+                    text-align: center;
+                    color: #FFF;
+                    font-style: italic;
+                    font-size: 20px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p a {
+                    color: #FFF;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+
+        section.slide
+            h2 Управление адресным пространством процесса
+            ul
+                li #[a(href="https://www.opennet.ru/man.shtml?topic=sbrk&category=2&russian=0") Системный вызов brk]
+                li Позволяет установить конец сегмента данных
+                li Один из способов, которыми можно реализовать #[code malloc] (однако, не самый лучший)
+
+        section.slide
+            h2 Системный вызов mmap
+            ul
+                li #[code mmap], #[code munmap] - отражает файлы или устройства в памяти или снимает их отражение
+                li Подробная документация - в #[a(href="https://www.opennet.ru/man.shtml?topic=mmap&category=2&russian=0") man]
+                li Позволяет читать из файла и писать в файл просто взаимодействуя с оперативной памятью
+                li Синхронизация с диском определяется ядром, однако можно этим управлять с помощью #[a(href="https://www.opennet.ru/man.shtml?topic=msync&category=2&russian=0") msync]
+
+        section.slide
+            h2 Системный вызов mmap
+            ul
+                li Заголовочный файл - #[code sys/mman.h]
+                li #[code(style="font-size: 15pt;")  void * mmap(void *start, size_t length, int prot , int flags, int fd, off_t offset);]
+                li #[code start] - желаемый адрес начала отображения, #[code length] - размер области, #[code prot] - флаги #[code PROT_EXEC], #[code PROT_READ] и #[code PROT_WRITE], #[code fd] - файловый дескриптор (или -1 иногда), #[code offset] - смещение в файле
+
+        section.slide
+            h2 Системный вызов munmap
+            ul
+                li Заголовочный файл - #[code sys/mman.h]
+                li #[code(style="font-size: 15pt;") int munmap(void *start, size_t length);]
+                li Отключает отображение по адресу #[code start] размера #[code length]
+        
+        section.slide
+            h2 Флаги mmap
+            ul
+                li #[code MAP_SHARED] - разделяемое отображение, изменения отображаются обратно в файл
+                li #[code MAP_PRIVATE] - неразделяемое отображение, COPY-ON-WRITE
+                li #[code MAP_ANONYMOUS] - анонимное отображение (не соответствует никакому файлу)
+                li #[code MAP_NORESERVE] - используется с #[code MAP_PRIVATE], не выделяет страницы пространства подкачки для этого отображения
+                li #[code MAP_FIXED] - не размещать по адресам, отличным от #[code start]
+
+        section.slide
+            h2 Особенности mmap
+            ul
+                li Гранулярность работы - одна страница памяти (x86 - 4 KiB)
+                li Смещение #[code offset] должно быть кратно размеру страницы
+                li Файл не должен быть пустым
+                li Хвост файла отображается на целую страницу
+
+        section.slide
+            h2 Типичное использование
+            ul
+                li #[code MAP_SHARED] - несколько процессов будут видеть одну и ту же память
+                li #[code MAP_PRIVATE] - другие процессы не увидят изменений в файле, подходит для исполняемых файлов
+                li #[code MAP_SHARED | MAP_ANONYMOUS] - общая память для процесса и потомков
+                li #[code MAP_PRIVATE | MAP_ANONYMOUS] - содержимое памяти видно только для одного процесса - доп. память в адресном пространстве
+        
+        section.slide
+            h2 Адресное пространство в Linux
+            ul
+                li Логическое отображение - #[code /proc/$PID/maps] (#[a(href="https://stackoverflow.com/questions/1401359/understanding-linux-proc-id-maps") объяснение])
+                li Физическое отображение - #[code /proc/$PID/pagemap] (#[a(href="https://www.kernel.org/doc/Documentation/vm/pagemap.txt") объяснение])
+                li Если страница есть в логическом отображении, но нет в физическом, то при первом обращении к этой странице ядро выделит новую физическую страницу ОЗУ или возьмет существующую и добавит ее в физическое отображение
+
+        section.slide
+            h2 Адресное пространство в Linux
+            ul
+                li Процесс начинает работу с настроенным логическим отображением и пустым физическим отображением
+                li Постепенно по мере обращения к страницам заполняется физическое отображение
+                li Если к странице не было обращений, она не будет загружена в физическую память
+        
+        section.slide
+            h2 Адресное пространство в Linux
+            ul
+                li Физические страницы – ценный ресурс, в какой-то момент их может не хватить
+                li Ядро попытается освободить физические страницы для выполнения текущего запроса
+                li Если физическая страница соответствует отображению файла в память и не модифицировалась, она просто освобождается
+        
+        section.slide
+            h2 Адресное пространство в Linux
+            ul
+                li Страницы MAP_SHARED и модифицированные (dirty) сохраняются в файл и освобождаются
+                li Прочие страницы сохраняются в файл (раздел) страничной подкачки – swap file
+        
+        section.slide
+            h2 Загрузка файла на выполнение
+            ul
+                li #[code ELF]-файл имеет структуру, оптимизированную для отображения файла #[code mmap]
+                li Секция кода (#[code .text]) отображается #[code PROT_READ | PROT_EXECUTE], #[code MAP_PRIVATE]
+                li Константные данные (#[code .rodata]): #[code PROT_READ], #[code MAP_PRIVATE]
+                li Данные (#[code .data]): #[code PROT_READ | PROT_WRITE], #[code MAP_PRIVATE]
+                li Секции #[code .text] и #[code .rodata] у всех процессов, запущенных из одного файла, будут использовать одни и те же физические страницы памяти
+
+        section.slide
+            h2 Разделяемые библиотеки
+            ul
+                li Позволяют избежать дублирования кода в процессах
+                li Делает возможным разделять код библиотек между процессами разных исполняемых файлов
+                li Облегчают обновление ПО
+
+        section.slide
+            h2 Разделяемые библиотеки
+            ul
+                li #[code ELF]-файл содержит секцию #[code .interp]. Эта секция содержит путь к «интерпретатору» - #[code /lib/ld-linux.so.2] — загрузчик динамических библиотек
+                li Загрузчик проходит по списку зависимостей библиотек, находит их в файловой системе и загружает в память, рекурсивно, пока все зависимости не будут удовлетворены
+                li Загрузка каждой библиотеки аналогична загрузке исполняемого файла (#[code mmap])
+
+        div(class="progress")
+        script(src="../../../common/shower/shower.min.js")

@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="en"><head><title>Архитектура компьютера и операционные системы</title><meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../../../common/shower/themes/ribbon/styles/screen-16x10.css"><style type="text/css">.caption {
+    color: #FFF;
+}</style></head><body class="shower list"><header class="caption"><h1>Архитектура компьютера и операционные системы</h1><p>Семинар 14. Динамическая загрузка модулей</p></header><section id="cover" class="slide"><h2>Семинар 14. Динамическая загрузка модулей</h2><p>Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020</p><img src="../../../common/cover.jpg" alt="" class="cover"><style type="text/css">#cover h2 {
+    margin: 30px 0 0;
+    color: #FFF;
+    text-align: center;
+    font-size: 70px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p {
+    margin: 10px 0 0;
+    text-align: center;
+    color: #FFF;
+    font-style: italic;
+    font-size: 20px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p a {
+    color: #FFF;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+</style></section><section class="slide"><h2>Позиционно-независимый код</h2><ul><li>Иногда бывает необходимость разместить исполняемый файл в памяти по произвольному адресу</li><li>Машинный код, настроенный на работу по фиксированным адресам в памяти, называется неперемещаемым (или позиционно-зависимым)</li><li>Такой код малопригоден для разделяемых библиотек, так как одна и та же библиотека может располагаться по разным адресам в адресном пространстве разных процессов</li></ul></section><section class="slide"><h2>Позиционно-независимый код</h2><ul><li>В позиционно-независимом (PIC) коде запрещено использование абсолютных адресов. Все адреса глобальных переменных и областей данных должны вычисляться относительно текущего положения исполняемого кода</li></ul><pre><code>call    l1
+l1:     popl    %eax
+</code></pre></section><section class="slide"><h2>Позиционно-независимый код</h2><pre><code style="font-size: 11pt;">.text
+msg1:   .asciz  "Hello, %d!\n"
+        .align  16
+        .global func
+func:
+        pushl   %esi            /* сразу заносим в стек второй аргумент printf */
+        call    l1              /* получаем адрес, по которому размещаемся в памяти */
+l1:     popl    %eax
+        addl    $msg1-l1, %eax  /* прибавляем к адресу l1 смещение msg1 относительно l1 */
+        pushl   %eax            /* заносим в стек получившийся абсолютный адрес */
+        call    printf
+        addl    $8, %esp        /* чистим стек */
+        ret
+</code></pre></section><section class="slide"><h2>Компиляция динамически подгружаемой библиотеки</h2><ul><li><code>gcc -O2 -Wall -Werror -std=c11 -fPIC -DPIC -c lib.c</code></li><li><code>-fPIC</code> включает режим генерации позиционно-независимого кода</li><li><code>-DPIC</code> устанавливает макрос <code>PIC</code> в значение 1 (можно сделать условную компилящию для динамических библиотек)</li></ul></section><section class="slide"><h2>Компиляция динамически подгружаемой библиотеки</h2><ul><li><code>gcc -std=с11 -fPIC -shared myfunc.o -olib.so</code></li><li><code>-shared</code> передается в компановщик (ld) и задает формат выходного файла</li></ul></section><section class="slide"><h2>Использование динамически подгружаемой библиотеки</h2><ul><li><code>gcc -O2 -Wall -Werror -std=c11 -c main.c</code></li><li><code>gcc main.o -L. -Wl,-rpath,. -o main -llib</code></li><li><code>-L.</code> - где искать <code>.so</code> библиотеку</li><li><code>-llib</code> - компонавать с динамической библиотекой <code>liblib.so</code></li><li><code>-Wl,-rpath,.</code> - передать компановщику аргументы поиска пути исполняемым файлом</li><li><code>LD_LIBRARY_PATH</code> - перменная окружения, вместо <code>-rpath</code></li></ul></section><section class="slide"><h2>Явная динамическая подгрузка библиотек</h2><ul><li>Заголовочный файл <code>dlfcn.h</code></li><li>При компоновке надо собирать с <code>-ldl</code></li><li><code style="font-size: 15pt;">void *dlopen(const char *filename, int flags);</code></li><li><code>flags</code> - <code>RTLD_LAZY</code> либо <code>RTLD_NOW</code></li><li>В случае ошибки возвращается <code>NULL</code>, текст сообщения - <code style="font-size: 15pt;">char *dlerror(void);</code></li><li>При повторном вызове dlopen увеличится счетчик на 1</li></ul></section><section class="slide"><h2>Явная динамическая подгрузка библиотек</h2><ul><li><code style="font-size: 15pt;">int dlclose(void *handle);</code></li><li><code style="font-size: 15pt;">void *dlsym(void *handle, const char *symbol);</code></li><li><code>NULL</code>, если не найден символ, и указатель иначе</li><li>Можно получить список символов главной программы, передав <code>NULL</code> в <code>dlopen</code> (но тогда для компоновки <code>-rdynamic</code>)</li></ul></section><div class="progress"></div><script src="../../../common/shower/shower.min.js"></script></body></html>
