@@ -1,0 +1,173 @@
+doctype html
+html(lang="en")
+    head
+        title Архитектура компьютера и операционные системы
+        meta(charset="utf-8")
+        meta(http-equiv="x-ua-compatible", content="ie=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="stylesheet", href="../../../common/shower/themes/ribbon/styles/screen-16x10.css")
+        style(type="text/css").
+            .caption {
+                color: #FFF;
+            }
+    body.shower.list
+        header.caption
+            h1 Архитектура компьютера и операционные системы
+            p Семинар 16. Процессы
+        section.slide#cover
+            h2 Семинар 16. Процессы
+            p Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020
+            img.cover(src="../../../common/cover.jpg", alt="")
+            style(type="text/css").
+                #cover h2 {
+                    margin: 30px 0 0;
+                    color: #FFF;
+                    text-align: center;
+                    font-size: 70px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p {
+                    margin: 10px 0 0;
+                    text-align: center;
+                    color: #FFF;
+                    font-style: italic;
+                    font-size: 20px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p a {
+                    color: #FFF;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+
+        section.slide
+            h2 Процессы
+            ul
+                li UNIX - многозадачная операционная система
+                li Процесс - программа, работающая в некоторый момент времени
+                li Процесс является субъектом распределения ресурсов в ОС
+
+        section.slide
+            h2 Атрибуты процесса
+            ul
+                li Идентификатор процесса (pid)
+                li Идентификатор родительского процесса (ppid)
+                li Статический (относительный) приоритет процесса (nice number)
+                li Динамический приоритет процесса
+                li Терминальная линия (TTY). Терминал или псевдотерминал, ассоциированный с процессом, если такой существует
+
+        section.slide
+            h2 Атрибуты процесса
+            ul
+                li Реальный (Real UID) и эффективный (Effective UID) идентификаторы пользователя
+                li Реальный (Real GID) и эффективный (Effective GID) идентификаторы группы
+                li #[a(href="http://parallel.uran.ru/book/export/html/396") Подробнее]
+
+        section.slide
+            h2 Атрибуты процесса
+            ul
+                li Таблицы страниц виртувльного адресного пространства
+                li Разделяемые и неразделяемые страницы памяти
+                li Отображения файлов в память
+                li Стек ядра
+
+        section.slide
+            h2 Атрибуты процесса
+            ul
+                li Таблица файловых дескрипторов
+                li Текущий каталог
+                li Корневой каталог
+                li #[a(href="https://it.wikireading.ru/3262") Umask процесса]
+
+        section.slide
+            h2 Атрибуты процесса
+            ul
+                li Регистры ЦП
+                li Командная строка, окружение
+                li Обработчики сигналов
+                li Счетчики потребленных ресурсов        
+        
+        section.slide
+            h2 Идентификаторы процессов
+            ul
+                li #[code pid] — идентификатор процесса, положительное целое число [1..32767] (1 — процесс init)
+                li #[code ppid] — идентификатор родительского процесса (если родитель процесса завершается, родителем становится init)
+                li #[code pgid] — идентификатор группы процессов (группа процессов выполняет одно задание)
+                li #[code sid] — идентификатор сессии (сеанса работы)
+                li #[a(href="https://stackoverflow.com/questions/6548823/use-and-meaning-of-session-and-process-group-in-unix") Подробнее]
+
+        section.slide
+            h2 Идентификаторы процессов
+            ul
+                li #[a(href="https://www.opennet.ru/man.shtml?topic=getpid&category=2&russian=0") getpid и getppid]
+                li Заголовочный файл #[code unistd.h]
+                li Позволяют узнать процессу свои #[code pid] и #[code ppid]
+
+        section.slide
+            h2 Создание процессов
+            ul
+                li Все процессы находятся в древовидной иерархии
+                li Корень дерева - процесс #[code init]
+                li #[code init] запускает все остальные процессы и имеет #[code pid] 1
+        
+        section.slide
+            h2 Создание процессов
+            ul
+                li Для создания процесса используется системный вызов #[a(href="https://www.opennet.ru/man.shtml?topic=fork&category=2") fork]
+                li Заголовочный файл - #[code unistd.h]
+                li Это единственный способ создания нового процесса
+                li При ошибке возвращается #[code -1], иначе - #[code pid] созданного процесса
+                li Внутри нового процесса возвращается #[code 0]
+                li Новый процесс - копия исходного
+
+        section.slide
+            h2 Создание процессов
+            ul
+                li Практически все атрибуты копируются, страницы памяти копируются в режиме copy-on-write
+                li Не копируются: #[code pid], #[code ppid], сигналы, ожидающие доставки, таймеры, блокировки файлов
+                li Копируются в том числе и структуры данных, инициализированные стандартной библиотекой
+
+        section.slide
+            h2 Завершение работы процесса
+            ul
+                li #[code exit] (структуры данных стандартной библиотеки очищаются) и #[code _exit] (просто системный вызов)
+                li Получение сигнала, вызывающего завершение (например, #[code SIGTERM])
+                li При получении сигнала так же может быть записан образ памяти (core dump)
+
+        section.slide
+            h2 Завершение работы процесса
+            ul
+                li Освобождение страниц памяти, использованных процессом
+                li Закрытие всех открытых дескрипторов файлов
+                li Освобождение прочих ресурсов, связанных с процессом, кроме статуса завершения и статистики ресурсов
+                li Если у процесса есть потомки, родителем потомков назначается процесс #[code init]
+                li Родителю процесса посылается сигнал SIGCHLD
+
+        section.slide
+            h2 Ожидание завершения процесса
+            ul
+                li #[code(style="font-size: 15pt;") pid_t wait(int *status);] - приостановить выполнение до завершения дочернего процесса
+                li #[code(style="font-size: 15pt;") pid_t waitpid(pid_t pid, int *status, int options);] - приостановить выполнение до завершения дочернего процесса с конкретным #[code pid]
+                li #[a(href="https://www.opennet.ru/man.shtml?topic=wait&category=2&russian=0") Подробное описание]
+                li Заголовочный файл #[code sys/wait.h]
+
+        sections.slide
+            h2 Ожидание процесса
+            ul
+                li Процесс-зомби - дочерний процесс в Unix-системе, завершивший своё выполнение, но ещё присутствующий в списке процессов операционной системы, чтобы дать родительскому процессу считать код завершения
+                li Такие процессы не потребляют ресурсов, однако занимают место в таблице процессов
+
+        section.slide
+            h2 Подмена программы в процессе
+            ul
+                li #[code(style="font-size: 13pt;") int execve(const char *filename, char *const argv [], char *const envp[]);] - выполняет программу, заданную параметром #[code filename]
+                li Заголовочный файл #[code unistd.h]
+                li Новая программа также наследует от вызвавшего процесса его идентификатор и открытые файловые дескрипторы, на которых не было флага закрыть-при-exec
+                li #[a(href="https://www.opennet.ru/man.shtml?topic=execve&category=2&russian=0") Подробнее]
+
+
+
+        div(class="progress")
+        script(src="../../../common/shower/shower.min.js")
