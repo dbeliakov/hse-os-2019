@@ -1,0 +1,94 @@
+doctype html
+html(lang="en")
+    head
+        title Архитектура компьютера и операционные системы
+        meta(charset="utf-8")
+        meta(http-equiv="x-ua-compatible", content="ie=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="stylesheet", href="../../../common/shower/themes/ribbon/styles/screen-16x10.css")
+        style(type="text/css").
+            .caption {
+                color: #FFF;
+            }
+    body.shower.list
+        header.caption
+            h1 Архитектура компьютера и операционные системы
+            p Семинар 17. Процессы (продолжение)
+        section.slide#cover
+            h2 Семинар 17. Процессы (продолжение)
+            p Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020
+            img.cover(src="../../../common/cover.jpg", alt="")
+            style(type="text/css").
+                #cover h2 {
+                    margin: 30px 0 0;
+                    color: #FFF;
+                    text-align: center;
+                    font-size: 70px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p {
+                    margin: 10px 0 0;
+                    text-align: center;
+                    color: #FFF;
+                    font-style: italic;
+                    font-size: 20px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p a {
+                    color: #FFF;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+
+        section.slide
+            h2 Замещение тела процесса
+            ul
+                li Замещение тела процесса — запуск на выполнение другого исполняемого файла в рамках текущего процесса
+                li Для замещения тела процесса используется семейство #[code exec*]: системные вызов #[code execve] и функции #[code execv], #[code execvp], #[code execl], #[code execlp], #[code execle]
+                li #[code v] - передается массив параметров, #[code l] - передается переменное число параметров, #[code e] - передается окружение, #[code p] - выполняется поиск по PATH
+
+        section.slide
+            h2 Замещение тела процесса
+            ul
+                li Сохраняются все атрибуты, за исключением
+                    ul
+                        li Атрибутов, связанных с адресным пространством процесса
+                        li Сигналов, ожидающие доставки
+                        li Таймеров
+
+        section.slide
+            h2 Системный вызов execve
+            ul
+                li #[code(style="font-size: 15pt;") int execve(const char *path, char *const argv[], char *const envp[]);]
+                li #[code path] — путь к исполняемому файлу
+                li #[code argv] — массив аргументов командной строки, заканчивается элементом #[code NULL]
+                li #[code envp] — массив переменных окружения, заканчивается элементом #[code NULL]
+                li Аргументы командной строки и переменные окружения помещаются на стек процесса
+                li При успехе системный вызов не возвращается
+        
+        section.slide
+            h2 Функция execlp
+            ul
+                li #[code(style="font-size: 15pt;") int execlp(const char *file, const char *arg, ...);]
+                li Выполняется поиск исполняемого файла #[code file] по каталогам, перечисленным в переменной окружения #[code PATH]
+                li Аргументы запускаемого процесса передаются в качестве параметров функции execlp
+                li Последним аргументом функции должен быть #[code NULL]
+        
+        section.slide
+            h2 Схема fork/exec
+            ul
+                li Системный вызов fork создает новый процесс
+                li В дочернем процессе системными вызовами настраиваются параметры процесса (например, текущий рабочий каталог, перенаправления стандартных потоков и пр.)
+                li Вызовом #[code exec*] запускается требуемый исполняемый файл
+        
+        section.slide
+            h2 Подготовка аргументов командной строки
+            ul
+                li Часто необходимо запустить программу, если передана строка состоящая из имени программы и аргументов
+                li Для этого можно использовать #[code(style="font-size: 15pt;") int system(const char *command);]
+                li Другой вариант #[code(style="font-size: 15pt;") execlp("/bin/sh", "/bin/sh", "-c", command, NULL);]
+
+        div(class="progress")
+        script(src="../../../common/shower/shower.min.js")

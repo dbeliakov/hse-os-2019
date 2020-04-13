@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en"><head><title>Архитектура компьютера и операционные системы</title><meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../../../common/shower/themes/ribbon/styles/screen-16x10.css"><style type="text/css">.caption {
+    color: #FFF;
+}</style></head><body class="shower list"><header class="caption"><h1>Архитектура компьютера и операционные системы</h1><p>Семинар 17. Процессы (продолжение)</p></header><section id="cover" class="slide"><h2>Семинар 17. Процессы (продолжение)</h2><p>Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020</p><img src="../../../common/cover.jpg" alt="" class="cover"><style type="text/css">#cover h2 {
+    margin: 30px 0 0;
+    color: #FFF;
+    text-align: center;
+    font-size: 70px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p {
+    margin: 10px 0 0;
+    text-align: center;
+    color: #FFF;
+    font-style: italic;
+    font-size: 20px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p a {
+    color: #FFF;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+</style></section><section class="slide"><h2>Замещение тела процесса</h2><ul><li>Замещение тела процесса — запуск на выполнение другого исполняемого файла в рамках текущего процесса</li><li>Для замещения тела процесса используется семейство <code>exec*</code>: системные вызов <code>execve</code> и функции <code>execv</code>, <code>execvp</code>, <code>execl</code>, <code>execlp</code>, <code>execle</code></li><li><code>v</code> - передается массив параметров, <code>l</code> - передается переменное число параметров, <code>e</code> - передается окружение, <code>p</code> - выполняется поиск по PATH</li></ul></section><section class="slide"><h2>Замещение тела процесса</h2><ul><li>Сохраняются все атрибуты, за исключением<ul><li>Атрибутов, связанных с адресным пространством процесса</li><li>Сигналов, ожидающие доставки</li><li>Таймеров</li></ul></li></ul></section><section class="slide"><h2>Системный вызов execve</h2><ul><li><code style="font-size: 15pt;">int execve(const char *path, char *const argv[], char *const envp[]);</code></li><li><code>path</code> — путь к исполняемому файлу</li><li><code>argv</code> — массив аргументов командной строки, заканчивается элементом <code>NULL</code></li><li><code>envp</code> — массив переменных окружения, заканчивается элементом <code>NULL</code></li><li>Аргументы командной строки и переменные окружения помещаются на стек процесса</li><li>При успехе системный вызов не возвращается</li></ul></section><section class="slide"><h2>Функция execlp</h2><ul><li><code style="font-size: 15pt;">int execlp(const char *file, const char *arg, ...);</code></li><li>Выполняется поиск исполняемого файла <code>file</code> по каталогам, перечисленным в переменной окружения <code>PATH</code></li><li>Аргументы запускаемого процесса передаются в качестве параметров функции execlp</li><li>Последним аргументом функции должен быть <code>NULL</code></li></ul></section><section class="slide"><h2>Схема fork/exec</h2><ul><li>Системный вызов fork создает новый процесс</li><li>В дочернем процессе системными вызовами настраиваются параметры процесса (например, текущий рабочий каталог, перенаправления стандартных потоков и пр.)</li><li>Вызовом <code>exec*</code> запускается требуемый исполняемый файл</li></ul></section><section class="slide"><h2>Подготовка аргументов командной строки</h2><ul><li>Часто необходимо запустить программу, если передана строка состоящая из имени программы и аргументов</li><li>Для этого можно использовать <code style="font-size: 15pt;">int system(const char *command);</code></li><li>Другой вариант <code style="font-size: 15pt;">execlp("/bin/sh", "/bin/sh", "-c", command, NULL);</code></li></ul></section><div class="progress"></div><script src="../../../common/shower/shower.min.js"></script></body></html>
