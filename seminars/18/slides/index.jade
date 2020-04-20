@@ -1,0 +1,93 @@
+doctype html
+html(lang="en")
+    head
+        title Архитектура компьютера и операционные системы
+        meta(charset="utf-8")
+        meta(http-equiv="x-ua-compatible", content="ie=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="stylesheet", href="../../../common/shower/themes/ribbon/styles/screen-16x10.css")
+        style(type="text/css").
+            .caption {
+                color: #FFF;
+            }
+    body.shower.list
+        header.caption
+            h1 Архитектура компьютера и операционные системы
+            p Семинар 18. Средства межпроцессного взаимодействия
+        section.slide#cover
+            h2 Семинар 18. Средства межпроцессного взаимодействия
+            p Архитектура компьютера и операционные системы @ ВШЭ, 2018-2019
+            img.cover(src="../../../common/cover.jpg", alt="")
+            style(type="text/css").
+                #cover h2 {
+                    margin: 30px 0 0;
+                    color: #FFF;
+                    text-align: center;
+                    font-size: 70px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p {
+                    margin: 10px 0 0;
+                    text-align: center;
+                    color: #FFF;
+                    font-style: italic;
+                    font-size: 20px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p a {
+                    color: #FFF;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+
+        section.slide
+            h2 Межпроцессорное взаимодействие
+            ul
+                li Адресные пространства процессов изолированы друг от друга операционной системой
+                li Простейшее взаимодействие процессов - файлы
+                li Например, открыть файл, считать значение, изменить его, записать изменное значение
+                li Прямая реализация, скорее всего, содержит #[code race condition]
+        
+        section.slide
+            h2 Блокировка файлов
+            ul
+                li Простейший способ с использованием эксклюзивного создания файлов - см. #[code O_EXCL] в #[code open]
+                li #[a(href="https://www.opennet.ru/man.shtml?topic=flock&category=2&russian=0") flock]
+                li #[a(href="https://www.opennet.ru/man.shtml?topic=lockf&category=3") lockf]
+                li #[a(href="https://www.opennet.ru/man.shtml?topic=fcntl&category=2") fcntl]
+
+        section.slide
+            h2 Lock-файл
+            ul
+                li Не требует, чтобы взаимодействующие процессы находились в родственных отношениях
+                li Процессы могут находиться на разных машинах, общаясь через сетевую файловую систему (однако, есть скользкие моменты)
+                li Создание lock-файла - операция сложная и занимающая много времени
+                li Нет возможности усыпить процесс до удаления lock-файла
+                li Спецэффекты при работе через сетевые файловые системы
+
+        section.slide
+            h2 Анонимные каналы
+            ul
+                li Средство однонаправленной пересылки данных между процессами
+                li #[a(href="https://www.opennet.ru/man.shtml?topic=pipe&category=2&russian=0") man]
+                li Данные записываются в файловый дескриптор #[code fd[1]], читаются - из #[code fd[0]]
+                li Начало или конец канала считается закрытым, когда закрыты все файловые дескрипторы, ссылающиесы на него
+                li #[code fdopen] позволяет использовать высокоуровневые средства ввода-вывода (лучше отключать буферизацию)
+
+        section.slide
+            h2 Анонимные каналы
+            ul
+                li #[code read] блокируется при отсутствии данных. Если данные есть, то вернется то, что уже есть в канале. Если другой конец закроют, то #[code read] вернет 0
+                li #[code write] может вызвать #[code SIGPIPE], если другой конец закрыт. Может заблокироваться, если исчерпан буфер. Операции атомарты в пределах #[code PIPE_BUF]
+        
+        section.slide
+            h2 Именованные каналы (FIFO)
+            ul
+                li Имеют точку привязки к файловой системе - имя. Кроме открытия, работа с FIFO не отличается от работы с анонимными каналами
+                li #[a(href="https://www.opennet.ru/man.shtml?topic=mkfifo&category=3&russian=0") man]
+                li Открытие происходит через #[code open]. Открыть можно либо на чтение, либо на запись
+
+        div(class="progress")
+        script(src="../../../common/shower/shower.min.js")

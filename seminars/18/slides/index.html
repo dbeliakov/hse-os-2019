@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en"><head><title>Архитектура компьютера и операционные системы</title><meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../../../common/shower/themes/ribbon/styles/screen-16x10.css"><style type="text/css">.caption {
+    color: #FFF;
+}</style></head><body class="shower list"><header class="caption"><h1>Архитектура компьютера и операционные системы</h1><p>Семинар 18. Средства межпроцессного взаимодействия</p></header><section id="cover" class="slide"><h2>Семинар 18. Средства межпроцессного взаимодействия</h2><p>Архитектура компьютера и операционные системы @ ВШЭ, 2018-2019</p><img src="../../../common/cover.jpg" alt="" class="cover"><style type="text/css">#cover h2 {
+    margin: 30px 0 0;
+    color: #FFF;
+    text-align: center;
+    font-size: 70px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p {
+    margin: 10px 0 0;
+    text-align: center;
+    color: #FFF;
+    font-style: italic;
+    font-size: 20px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p a {
+    color: #FFF;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+</style></section><section class="slide"><h2>Межпроцессорное взаимодействие</h2><ul><li>Адресные пространства процессов изолированы друг от друга операционной системой</li><li>Простейшее взаимодействие процессов - файлы</li><li>Например, открыть файл, считать значение, изменить его, записать изменное значение</li><li>Прямая реализация, скорее всего, содержит <code>race condition</code></li></ul></section><section class="slide"><h2>Блокировка файлов</h2><ul><li>Простейший способ с использованием эксклюзивного создания файлов - см. <code>O_EXCL</code> в <code>open</code></li><li><a href="https://www.opennet.ru/man.shtml?topic=flock&amp;category=2&amp;russian=0">flock</a></li><li><a href="https://www.opennet.ru/man.shtml?topic=lockf&amp;category=3">lockf</a></li><li><a href="https://www.opennet.ru/man.shtml?topic=fcntl&amp;category=2">fcntl</a></li></ul></section><section class="slide"><h2>Lock-файл</h2><ul><li>Не требует, чтобы взаимодействующие процессы находились в родственных отношениях</li><li>Процессы могут находиться на разных машинах, общаясь через сетевую файловую систему (однако, есть скользкие моменты)</li><li>Создание lock-файла - операция сложная и занимающая много времени</li><li>Нет возможности усыпить процесс до удаления lock-файла</li><li>Спецэффекты при работе через сетевые файловые системы</li></ul></section><section class="slide"><h2>Анонимные каналы</h2><ul><li>Средство однонаправленной пересылки данных между процессами</li><li><a href="https://www.opennet.ru/man.shtml?topic=pipe&amp;category=2&amp;russian=0">man</a></li><li>Данные записываются в файловый дескриптор <code>fd[1]</code>, читаются - из <code>fd[0]</code></li><li>Начало или конец канала считается закрытым, когда закрыты все файловые дескрипторы, ссылающиесы на него</li><li><code>fdopen</code> позволяет использовать высокоуровневые средства ввода-вывода (лучше отключать буферизацию)</li></ul></section><section class="slide"><h2>Анонимные каналы</h2><ul><li><code>read</code> блокируется при отсутствии данных. Если данные есть, то вернется то, что уже есть в канале. Если другой конец закроют, то <code>read</code> вернет 0</li><li><code>write</code> может вызвать <code>SIGPIPE</code>, если другой конец закрыт. Может заблокироваться, если исчерпан буфер. Операции атомарты в пределах <code>PIPE_BUF</code></li></ul></section><section class="slide"><h2>Именованные каналы (FIFO)</h2><ul><li>Имеют точку привязки к файловой системе - имя. Кроме открытия, работа с FIFO не отличается от работы с анонимными каналами</li><li><a href="https://www.opennet.ru/man.shtml?topic=mkfifo&amp;category=3&amp;russian=0">man</a></li><li>Открытие происходит через <code>open</code>. Открыть можно либо на чтение, либо на запись</li></ul></section><div class="progress"></div><script src="../../../common/shower/shower.min.js"></script></body></html>
