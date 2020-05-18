@@ -1,0 +1,243 @@
+doctype html
+html(lang="en")
+    head
+        title Архитектура компьютера и операционные системы
+        meta(charset="utf-8")
+        meta(http-equiv="x-ua-compatible", content="ie=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="stylesheet", href="../../../common/shower/themes/ribbon/styles/screen-16x10.css")
+        style(type="text/css").
+            .caption {
+                color: #FFF;
+            }
+    body.shower.list
+        header.caption
+            h1 Архитектура компьютера и операционные системы
+            p Семинар 20. Сокеты
+        section.slide#cover
+            h2 Семинар 20. Сокеты
+            p Архитектура компьютера и операционные системы @ ВШЭ, 2019-2020
+            img.cover(src="../../../common/cover.jpg", alt="")
+            style(type="text/css").
+                #cover h2 {
+                    margin: 30px 0 0;
+                    color: #FFF;
+                    text-align: center;
+                    font-size: 70px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p {
+                    margin: 10px 0 0;
+                    text-align: center;
+                    color: #FFF;
+                    font-style: italic;
+                    font-size: 20px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p a {
+                    color: #FFF;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+
+        section.slide
+            h2 TCP/IP
+            ul
+                li #[code TCP/IP] — сетевая модель передачи данных. Описывает способ передачи данных от источника к получателю. Предполагается прохождение информации через четыре уровня, каждый из которых описывается протоколом
+                li Прикладной (#[code HTTP], #[code SSH], #[code FTP], ...)
+                li Транспортный (#[code TCP], #[code UDP], ...)
+                li Сетевой (#[code IP], #[code ARP], ...)
+                li Канальный (#[code Ethernet], ...)
+
+        section.slide
+            h2 Как работает браузер
+            ul
+                li Браузер обращается к #[code DNS] и находит реальный #[code ip-адрес] сервера
+                li Браузер посылает #[code HTTP] запрос к серверу, запрашивая его отправить копию сайта для клиента
+                li В случае успеха сервер отправляет клиенту статус #[code 200 ОК] и запрашиваемые данные
+                li Браузер интерпретирует полученные данные (например, рисует красивый сайт из #[code HTML] и #[code CSS])
+                li #[a(href="https://habr.com/ru/company/htmlacademy/blog/254825/") Утрированное полное описание]
+
+        section.slide
+            h2 DNS
+            ul
+                li Статья на #[a(href="https://ru.wikipedia.org/wiki/DNS") wiki]
+                li Распределенная система получения информации о доменах
+                li Позволяет переводить "человекочитаемые" адреса серверов (#[code yandex.ru]) в "машиночитаемые" ip-адреса (#[code 5.255.255.50])
+                li Получить информацию можно с помощью команды #[code host]
+                li К одному доменному имени может быть привязано несколько ip-адресов
+
+        section.slide
+            h2 IP-адрес
+            ul
+                li Уникальный идентификатор в сети
+                li Два протокола - #[code ipv4] (32 бита) и #[code ipv6] (128 бит)
+                li Принятый формат записи для #[code ipv4] - значения 4х байтов через точку (#[code 127.0.0.1]), для #[code ipv6] - шестнадцатеричные значения в hex через двоеточик (#[code ff06::c3]), #[a(href="https://www.ibm.com/support/knowledgecenter/ru/ssw_ibm_i_72/rzai2/rzai2ipv6addrformat.htm") подробнее]
+                li В данный момент идет активный переход на #[code ipv6], так как диапазона #[code ipv4] не хватает
+
+        section.slide
+            h2 getaddrinfo
+            ul
+                li #[a(href="https://www.opennet.ru/man.shtml?topic=getaddrinfo&category=3&russian=0") man]
+                li Функция getaddrinfo выполняет преобразование адреса хоста и имени сервиса (или номера порта) из строкового представления во внутренний формат, пригодный для передачи в функции #[code connect] или #[code bind]
+                li Заменяет собой функции #[code gethostbyname], #[code gethostbyaddr], которые в настоящее время считаются устаревшими
+                li Заполняет структуры, необходимые для работы в дальнейшем, данными
+
+        section.slide
+            h2 getaddrinfo
+            pre
+                code(style="font-size: 11pt;").
+                    int getaddrinfo(const char *node,     // напр. "www.example.com" или IP
+                                    const char *service,  // напр. "http" или номер порта
+                                    const struct addrinfo *hints,
+                                    struct addrinfo **res);
+        
+        section.slide
+            h2 getaddrinfo
+            pre
+                code(style="font-size: 11pt;").
+                    struct addrinfo
+                    {
+                        int              ai_flags;     // флаги для использования в hints
+                        int              ai_family;    // для TCP/IP v4 здесь AF_INET, используется в hints
+                        int              ai_socktype;  // для TCP здесь SOCK_STREAM, используется в hints
+                        int              ai_protocol;  // уточнение протокола, обычно 0
+                        socklen_t        ai_addrlen;   // длина адреса для передачи в параметре addrlen в connect или bind
+                        struct sockaddr *ai_addr;      // адрес для передачи в connect или bind
+                        char            *ai_canonname;
+                        struct addrinfo *ai_next;      // указатель на следующий элемент
+                    };
+
+        section.slide
+            h2 getaddrinfo
+            ul
+                li Возвращает 0 при успешном преобразовании и ненулевой код ошибки при ошибке. Этот код ошибки можно передать в функцию #[code gai_strerror] для преобразования в строку для вывода сообщения об ошибке
+                li Если необходимо обратиться к полям адреса для получения IP-адреса или номера порта, необходимо преобразовать обобщенный указатель типа #[code struct sockaddr] в указатель #[code struct sockaddr_in]. Затем уже можно работать с полями #[code sin_addr] и #[code sin_port]
+
+        section.slide
+            h2 getaddrinfo
+            ul
+                li После завершения работы со списком необходимо не забыть освободить занимаемую память с помощью #[code freeaddrinfo]
+                li Преобразовать адрес из числа в строковую нотацию можно с помощью #[code inet_ntoa]
+                li Заполнить ip-адрес текущим можно с помощью #[code hints.ai_flags = AI_PASSIVE;]
+
+        section.slide
+            h2 Сетевое соединение
+            ul
+                li Кроме ip-адреса, для установления соединения необходим номер порта - 16-битное число
+                li Стандартные порты: #[code web] (#[code http]) - #[code 80], #[code web] (#[code https]) - #[code 443], #[code ssh] - #[code 22]
+                li Соединение идентифицируется четырьмя параметрами - два ip-адреса и два номера порта
+
+        section.slide
+            h2 Сокет
+            ul
+                li Сокет - абстракция соединения, позволяет приложениям работать с сетевым соединением как с каналом для записи и чтения
+                li Создание сокета: #[code int socket(int domain, int type, int protocol);]
+                li #[code domain] - #[code PF_INET], #[code type] - #[code SOCK_STREAM] или #[code SOCK_DGRAM], #[code protocol] - #[code 0] (будет выбран автоматически, рекомендуется)
+                li Возвращает номер файлового дескриптора, можно использовать #[code read] и #[code write], либо преобразовать в #[code FILE*]
+
+        section.slide
+            h2 Сокет
+            ul
+                li Удобно использовать с результатом вызова #[code getaddrinfo]
+                li #[code(style="font-size: 15pt;") int s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);]
+                li Возвращает #[code -1] при ошибке (и устанавливает переменную #[code errno])
+
+        section.slide
+            h2 Привязка сокета
+            ul
+                li #[code int bind(int fd, struct sockaddr *paddr, int addrlen);]
+                li Позволяет ассоциировать сокет с конкретным портом (актуально для сервера)
+                li Принимает ФД сокета, указатель на #[code struct soctaddr], содержащую информацию о вашем адресе, а именно - IP и порте, и addrlen - длину адреса в байтах
+
+        section.slide
+            h2 Привязка сокета
+            ul
+                li Использование с результатом #[code getaddrinfo]: #[code style="font-size: 15pt;" bind(sockfd, res->ai_addr, res->ai_addrlen);]
+            pre
+                code(style="font-size: 11pt;").
+                    struct sockaddr_in {
+                        sa_family_t    sin_family; /* address family: AF_INET */
+                        in_port_t      sin_port;   /* port in network byte order */
+                        struct in_addr sin_addr;   /* internet address (may be INADDR_ANY) */
+                    };
+
+                    /* Internet address. */
+                    struct in_addr {
+                        uint32_t       s_addr;     /* address in network byte order */
+                    };
+
+        section.slide
+            h2 Привязка сокета
+            pre
+                code(style="font-size: 11pt;").
+                    // !!! ЭТО СТАРЫЙ СПОСОБ !!!
+
+                    int sockfd;
+                    struct sockaddr_in my_addr;
+
+                    sockfd = socket(PF_INET, SOCK_STREAM, 0);
+
+                    my_addr.sin_family = AF_INET;
+                    my_addr.sin_port = htons(MYPORT);     // short, сетевой порядок байт
+                    my_addr.sin_addr.s_addr = inet_addr("10.12.110.57");
+
+                    bind(sockfd, (struct sockaddr *)&my_addr, sizeof my_addr);
+
+        section.slide
+            h2 Привязка сокета
+            ul
+                li Иногда невозможно привязать сокет к порту, хотя фактически он никем не занят
+            pre
+                code(style="font-size: 11pt;").
+                    int yes=1;
+
+                    // избавляемся от надоедливой ошибки "Address already in use"
+                    if (setsockopt(listener,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int)) == -1) {
+                        perror("setsockopt");
+                        exit(1);
+                    }
+
+        section.slide
+            h2 connect
+            ul
+                li #[code connect] соединяет сокет с удаленным хостом
+                li #[code(style="font-size: 15pt;") int connect(int sockfd, struct sockaddr *serv_addr, int addrlen);]
+                li Использование с результатом #[code getaddrinfo] #[code(style="font-size: 15pt;") connect(sockfd, res->ai_addr, res->ai_addrlen);]
+                li При ошибке возвращается #[code -1] и устанавливается #[code errno]
+
+        section.slide
+            h2 listen
+            ul
+                li #[code(style="font-size: 15pt;") int listen(int sockfd, int backlog);]
+                li #[code backlog] - число возможных соединений во входящей очереди, обычно хватает 5 или 10
+
+        section.slide
+            h2 accept
+            ul
+                li #[code(style="font-size: 15pt;") int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);]
+                li #[code addr] - это обычно указатель на локальную структуру #[code sockaddr_storage]. В ней будет информация о входящем соединении
+            pre
+                code(style="font-size: 11pt;").
+                    struct sockaddr_storage their_addr;
+                    int addr_size = sizeof(their_addr);
+                    int new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
+
+        section.slide
+            h2 Получение и отправка данных
+            ul
+                li Можно использовать #[code read] и #[code write]
+                li Можно использовать специализированные #[code send] и #[code recv]
+                li Можно обернуть в #[code FILE*] и использовать #[code fprintf] и #[code fscanf] (лучше - раздельные для чтения и записи)
+
+        section.slide
+            h2 Мультиплексирование
+            ul
+                li Ввод/вывод (особенно сетевой) - одно из самых медленных мест в программе
+                li #[code select] позволяет работать с файловыми дескрипторами в неблокирующем режиме
+                li #[code epoll] - более совершенный способ
+
+        div(class="progress")
+        script(src="../../../common/shower/shower.min.js")
