@@ -1,0 +1,152 @@
+doctype html
+html(lang="en")
+    head
+        title Архитектура компьютера и операционные системы
+        meta(charset="utf-8")
+        meta(http-equiv="x-ua-compatible", content="ie=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="stylesheet", href="../../../common/shower/themes/ribbon/styles/screen-16x10.css")
+        style(type="text/css").
+            .caption {
+                color: #FFF;
+            }
+    body.shower.list
+        header.caption
+            h1 Архитектура компьютера и операционные системы
+            p Семинар 22. Потоки
+        section.slide#cover
+            h2 Семинар 22. Потоки
+            p Архитектура компьютера и операционные системы @ ВШЭ, 2018-2019
+            img.cover(src="../../../common/cover.jpg", alt="")
+            style(type="text/css").
+                #cover h2 {
+                    margin: 30px 0 0;
+                    color: #FFF;
+                    text-align: center;
+                    font-size: 70px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p {
+                    margin: 10px 0 0;
+                    text-align: center;
+                    color: #FFF;
+                    font-style: italic;
+                    font-size: 20px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p a {
+                    color: #FFF;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+
+        section.slide
+            h2 Развитие процессоров
+            ul
+                li #[b 1971] - Intel 4004, 740 кГц
+                li #[b 1989] - Intel i486, > 100 МГц
+                li #[b 2000] - Intel Pentium 3, > 1 ГГц
+                li #[b 2017] - максимальная частота - до 5 ГГц
+
+        sections.slide
+            h2 Развитие процессоров
+            ul
+                li Рост максимальной частоты процессоров сильно замедлился
+                li Причина этого кроется в #[a(href="https://www.iguides.ru/main/other/pochemu_chastoty_protsessorov_ne_rastut_vyshe_neskolkikh_gigagerts/") физических ограничениях]
+                li Вертикальное масштабирование программ (т.е. более быстрое исполнение за счет большей частоты процессора) невозможно
+                li Вместо этого программы масштабируются горизонтально
+
+        section.slide
+            h2 Многоядерные системы
+            ul
+                li Для увеличения быстродействия программ конструируют многоядерные системы - несколько вычислительных ядер на одном кристалле
+                li Соременные ОС - многозадачные, процессы распределяются между ядрами
+                li Но иногда нужно получить от системы максимум в высокопроизводительных вычислениях
+
+        section.slide
+            h2 Конкурентность vs Параллелизм
+            ul
+                li Конкурентность - выполнение нескольких задач за некоторый промежуток времени
+                li Параллелизм - выполнение нескольких задач одновременно (например, на различных ядрах)
+
+        section.slide
+            h2 Многопроцессное выполнение
+            ul
+                li Программа может запустить несколько процессов, которые будут по максимуму утилизировать ядра
+                li Минусы - сложность организации взаимодействия между процессами и накладные расходы на переключение процессов
+        
+        section.slide
+            h2 Многопоточное выполнение
+            ul
+                li Каждый процесс может выполняться в несколько потоков
+                li Потоки распределяются между ядрами, максимально их утилизируя
+                li Потоки выполняются в одном адрессном пространстве, но каждый имеет свой стек
+                li Переключение потока дешевле, чем переключение процесса
+
+        section.slide
+            h2 Многопоточное выполнение
+            img(src="img/threads.png", style="width: 70%;")
+
+        sections.slide
+            h2 Многопоточное выполнение
+            ul
+                li Писать и поддерживать многопоточные программы сложнее, чем однопоточные
+                li Самая частая проблема - #[b race condition]
+                li Синхранизация потоков будет рассмотрена в дальнейшем
+
+        section.slide
+            h2 POSIX threads
+            ul
+                li Будет рассматриваться POSIX API для работы с потоками
+                li Заголовочный файл - #[code pthread.h]
+                li При компиляции программы необходимо использовать флаг #[code -pthread]
+                li #[code pthread_t] — идентификатор потока
+                li #[code pthread_attr_t] — перечень атрибутов потока
+
+        section.slide
+            h2 POSIX threads
+            ul
+                li Основная функция потока должна иметь вид #[code void* thread_func(void* ptr);]
+                li Агрумент #[code ptr] служит для передачи параметров
+                li Возвращаемое значение можно получить в момент ожидания завершения потока
+                li Поток может быть завершен с помощью #[code void pthread_exit(void *ptr);]
+                li При вызове #[code exit] будет завершен весь процесс
+            
+        section.slide
+            h2 Создание потока
+            pre
+                code(style="font-size: 15pt;").
+                    int pthread_create(pthread_t *thread,
+                            const pthread_attr_t *attr,
+                            void *(*start_routine) (void *),
+                            void *arg);
+            ul
+                li Возвращаемое значение #[code 0] - успех, #[code EAGAIN], #[code EINVAL] и #[code EPERM] - ошибка
+                li Поток начнет исполнение, как только планировщик ОС передаст ей управление
+        
+        section.slide
+            h2 Создание потока
+            ul
+                li #[code thread] - идентификатор потока, ему можно присваивать значение 0, либо его можно сравнивать на равенство или неравенство с другим идентификатором
+                li #[code attr] - атрибуты потока, #[code NULL] - по умолчанию
+                li #[a(href="https://www.opennet.ru/docs/RUS/linux_parallel/node54.html") Атрибуты] позволяют изменять параметры для планировщика и изменять размер стека (но не меньше, чем #[code sysconf(_SC_THREAD_STACK_MIN)])
+
+        section.slide
+            h2 Ожидание потока
+            ul
+                li #[code(style="font-size: 15pt;") int pthread_join(pthread_t thread, void **retval);]
+                li #[code retval] может быть равно #[code NULL]
+                li Поток можно ожидать только один раз
+                li Отсутствует возможность ждать любой из потоков
+
+        section.slide
+            h2 Thread local storage
+            ul
+                li #[code _Thread_local] для #[code C], #[code thread_local] для #[code C++]
+                li Глобальная переменная, доступная во всех функциях, находящихся в единице компиляции ниже точки определения
+                li Изменения этой переменной не видны в других потоках. Более того, начальное значение не зависит от того, какое оно было в создающем потоке
+
+        div(class="progress")
+        script(src="../../../common/shower/shower.min.js")
