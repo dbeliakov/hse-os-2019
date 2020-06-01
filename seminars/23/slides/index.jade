@@ -1,0 +1,110 @@
+doctype html
+html(lang="en")
+    head
+        title Архитектура компьютера и операционные системы
+        meta(charset="utf-8")
+        meta(http-equiv="x-ua-compatible", content="ie=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="stylesheet", href="../../../common/shower/themes/ribbon/styles/screen-16x10.css")
+        style(type="text/css").
+            .caption {
+                color: #FFF;
+            }
+    body.shower.list
+        header.caption
+            h1 Архитектура компьютера и операционные системы
+            p Семинар 23. Синхронизация потоков
+        section.slide#cover
+            h2 Семинар 23. Синхронизация потоков
+            p Архитектура компьютера и операционные системы @ ВШЭ, 2018-2019
+            img.cover(src="../../../common/cover.jpg", alt="")
+            style(type="text/css").
+                #cover h2 {
+                    margin: 30px 0 0;
+                    color: #FFF;
+                    text-align: center;
+                    font-size: 70px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p {
+                    margin: 10px 0 0;
+                    text-align: center;
+                    color: #FFF;
+                    font-style: italic;
+                    font-size: 20px;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+                #cover p a {
+                    color: #FFF;
+                    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                                 black -1px 1px 0, black 1px -1px 0;
+                }
+
+        sections.slide
+            h2 Data race
+            ul
+                li Если несколько потоков одновременно обращаются к одной и той же ячейке памяти, причем хотя бы один из потоков выполняет запись в эту ячейку, такая ситуация называется #[code data race]
+                li В случае, когда два потока одновременно работают со сложным объектом, а не с примитивным типом, необходимо понять, является ли объект потокобезопасным
+                li Как правило, если методы не модифицируют объект, то их можно вызывать параллельно, а если модифицируют - то нельзя
+
+        section.slide
+            h2 Атомарность работы с памятью
+            ul
+                li На всех современных процессорах операции чтения из памяти и записи в память натурально-выравненных значений размера не более машинного слова атомарны
+                li Это означает, что в случае одновременного чтения одним ядром и записи другим ядром значения по одному и тому же адресу, значение не "рассыпется на куски" частично старого, а частично нового значения
+                li Такая семантика чтения и записи явно и неявно используется в большом объеме существующего программного кода
+
+        sections.slide
+            h2 Атомарность работы с памятью
+            ul
+                li Строго говоря, с точки зрения стандартов Си и Си++ предположение об атомарности памяти некорректно
+                li Более того, даже примитивные операции (#[code ++i;]) не атомарны даже при атомарности памяти
+                li Ключевое слово #[code volatile] не дает никакой гарантии атомарности, использовать его для этого нельзя
+                li Для атомарных операций в #[code C] и #[code C++] необходимо использовать специальные контрукции
+
+        section.slide
+            h2 Atomic
+            ul
+                li Параллельная работа с атомарными переменными свободна от гонок
+                li Может быть #[code lock-free] с помощью специальных инструкций процессора, либо используется мьютекс
+
+        section.slide
+            h2 Atomic
+            ul
+                li В #[code C++] используется #[code std::atomic]. Гарантированно #[code lock-free] для #[code bool], на практике - примитивные типы тоже
+                li В #[code C] - ключевое слово #[code _Atomic], заголовочный файл #[code stdatomic.h], #[code atomic_bool], #[code atomic_int], ...
+                li Поддерживаются основные операции (#[code =], #[code +=], ...)
+                li #[a(href="https://en.cppreference.com/w/c/language/atomic") Подробнее], #[a(href="https://en.cppreference.com/w/c/atomic") подробнее]
+
+        section.slide
+            h2 Atomic
+            ul
+                li Lock-free atomic-примитивы используются для построения lock-free структур данных. В таких структурах данных изменения для внешнего пользователя происходят атомарно
+                li Обычно в lock-free структурах данных сначала подготавливаются изменения, а затем атомарно применяются
+                li Пример - вставка в односвязный список
+
+        section.slide
+            h2 Mutex
+            ul
+                li Примитив синхронизации, который может быть заблокирован или разблокирован
+                li Если мьютекс заблокирован, то следующая попытка блокировки будет ожидать предварительной разблокировки
+                li Позволяет выделять "критические секции" - участки кода, для которых важно, чтобы только один поток мог одноврененно в них находиться
+            pre
+                code(style="font-size: 12pt;").
+                    pthread_mutex_t counter_mutex = PTHREAD_MUTEX_INITIALIZER;
+                    pthread_mutex_lock(&counter_mutex);
+                    pthread_mutex_unlock(&counter_mutex);
+
+        section.slide
+            h2 Condition variable
+            ul
+                li Мы хотим иметь возможность поместить поток в состояние сна (блокировки), а когда наступит какое-то нужное нам событие, разбудить один или все потоки, которые спят в ожидании этого события
+                li #[code pthread_cond_wait] - ожидание получение сигнала
+                li #[code pthread_cond_signal] - послать сигнал одному из ожидающих потоков
+                li #[code pthread_cond_broadcast] - послать сигнал всем ожидающим потокам
+                li Используется мьютекс для избежания гонок
+
+        div(class="progress")
+        script(src="../../../common/shower/shower.min.js")

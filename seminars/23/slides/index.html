@@ -1,0 +1,28 @@
+<!DOCTYPE html><html lang="en"><head><title>Архитектура компьютера и операционные системы</title><meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../../../common/shower/themes/ribbon/styles/screen-16x10.css"><style type="text/css">.caption {
+    color: #FFF;
+}</style></head><body class="shower list"><header class="caption"><h1>Архитектура компьютера и операционные системы</h1><p>Семинар 23. Синхронизация потоков</p></header><section id="cover" class="slide"><h2>Семинар 23. Синхронизация потоков</h2><p>Архитектура компьютера и операционные системы @ ВШЭ, 2018-2019</p><img src="../../../common/cover.jpg" alt="" class="cover"><style type="text/css">#cover h2 {
+    margin: 30px 0 0;
+    color: #FFF;
+    text-align: center;
+    font-size: 70px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p {
+    margin: 10px 0 0;
+    text-align: center;
+    color: #FFF;
+    font-style: italic;
+    font-size: 20px;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+#cover p a {
+    color: #FFF;
+    text-shadow: black 1px 1px 0, black -1px -1px 0, 
+                 black -1px 1px 0, black 1px -1px 0;
+}
+</style></section><sections class="slide"><h2>Data race</h2><ul><li>Если несколько потоков одновременно обращаются к одной и той же ячейке памяти, причем хотя бы один из потоков выполняет запись в эту ячейку, такая ситуация называется <code>data race</code></li><li>В случае, когда два потока одновременно работают со сложным объектом, а не с примитивным типом, необходимо понять, является ли объект потокобезопасным</li><li>Как правило, если методы не модифицируют объект, то их можно вызывать параллельно, а если модифицируют - то нельзя</li></ul></sections><section class="slide"><h2>Атомарность работы с памятью</h2><ul><li>На всех современных процессорах операции чтения из памяти и записи в память натурально-выравненных значений размера не более машинного слова атомарны</li><li>Это означает, что в случае одновременного чтения одним ядром и записи другим ядром значения по одному и тому же адресу, значение не "рассыпется на куски" частично старого, а частично нового значения</li><li>Такая семантика чтения и записи явно и неявно используется в большом объеме существующего программного кода</li></ul></section><sections class="slide"><h2>Атомарность работы с памятью</h2><ul><li>Строго говоря, с точки зрения стандартов Си и Си++ предположение об атомарности памяти некорректно</li><li>Более того, даже примитивные операции (<code>++i;</code>) не атомарны даже при атомарности памяти</li><li>Ключевое слово <code>volatile</code> не дает никакой гарантии атомарности, использовать его для этого нельзя</li><li>Для атомарных операций в <code>C</code> и <code>C++</code> необходимо использовать специальные контрукции</li></ul></sections><section class="slide"><h2>Atomic</h2><ul><li>Параллельная работа с атомарными переменными свободна от гонок</li><li>Может быть <code>lock-free</code> с помощью специальных инструкций процессора, либо используется мьютекс</li></ul></section><section class="slide"><h2>Atomic</h2><ul><li>В <code>C++</code> используется <code>std::atomic</code>. Гарантированно <code>lock-free</code> для <code>bool</code>, на практике - примитивные типы тоже</li><li>В <code>C</code> - ключевое слово <code>_Atomic</code>, заголовочный файл <code>stdatomic.h</code>, <code>atomic_bool</code>, <code>atomic_int</code>, ...</li><li>Поддерживаются основные операции (<code>=</code>, <code>+=</code>, ...)</li><li><a href="https://en.cppreference.com/w/c/language/atomic">Подробнее</a>, <a href="https://en.cppreference.com/w/c/atomic">подробнее</a></li></ul></section><section class="slide"><h2>Atomic</h2><ul><li>Lock-free atomic-примитивы используются для построения lock-free структур данных. В таких структурах данных изменения для внешнего пользователя происходят атомарно</li><li>Обычно в lock-free структурах данных сначала подготавливаются изменения, а затем атомарно применяются</li><li>Пример - вставка в односвязный список</li></ul></section><section class="slide"><h2>Mutex</h2><ul><li>Примитив синхронизации, который может быть заблокирован или разблокирован</li><li>Если мьютекс заблокирован, то следующая попытка блокировки будет ожидать предварительной разблокировки</li><li>Позволяет выделять "критические секции" - участки кода, для которых важно, чтобы только один поток мог одноврененно в них находиться</li></ul><pre><code style="font-size: 12pt;">pthread_mutex_t counter_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_lock(&counter_mutex);
+pthread_mutex_unlock(&counter_mutex);
+</code></pre></section><section class="slide"><h2>Condition variable</h2><ul><li>Мы хотим иметь возможность поместить поток в состояние сна (блокировки), а когда наступит какое-то нужное нам событие, разбудить один или все потоки, которые спят в ожидании этого события</li><li><code>pthread_cond_wait</code> - ожидание получение сигнала</li><li><code>pthread_cond_signal</code> - послать сигнал одному из ожидающих потоков</li><li><code>pthread_cond_broadcast</code> - послать сигнал всем ожидающим потокам</li><li>Используется мьютекс для избежания гонок</li></ul></section><div class="progress"></div><script src="../../../common/shower/shower.min.js"></script></body></html>
